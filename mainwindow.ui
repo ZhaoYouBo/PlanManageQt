@@ -75,7 +75,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTreeWidget" name="treeWidget">
+         <widget class="QTreeWidget" name="treeWidget_task">
           <column>
            <property name="text">
             <string notr="true">1</string>
@@ -95,7 +95,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QTreeWidget" name="treeWidget_2">
+         <widget class="QTreeWidget" name="treeWidget_plan">
           <column>
            <property name="text">
             <string notr="true">1</string>
@@ -124,7 +124,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QTextEdit" name="textEdit"/>
+           <widget class="QTextEdit" name="textEdit_reflection"/>
           </item>
          </layout>
         </item>
@@ -138,7 +138,7 @@
            </widget>
           </item>
           <item>
-           <widget class="QTextEdit" name="textEdit_2"/>
+           <widget class="QTextEdit" name="textEdit_summary"/>
           </item>
          </layout>
         </item>
