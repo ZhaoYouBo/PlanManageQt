@@ -4,7 +4,7 @@
 #include <QSqlDatabase>
 #include <QDate>
 
-struct Task {
+struct TaskData {
     int id; // Primary key
     QString name; // Task name
     QDate createdDate; // Created date
@@ -12,10 +12,37 @@ struct Task {
     QDate completedDate; // Completed date
     int status; // Task status
 };
+
+struct HabitData {
+    int id; // Primary key
+    QString name; // Habit name
+    QDate createdDate; // Created date
+    QString target_frequency; // Habit Frequency
+    int status; // Habit status
+};
+
+struct PlanData {
+    int id; // Primary key
+    QString name; // Plan name
+    QString target_frequency; // Habit Frequency
+    int status; // Habit status
+};
 class Database
 {
 public:
     Database(const QString& dbName);
+
+    QList<TaskData> getTaskByStatus(int status);
+    QList<HabitData> getHabitByStatus(int status);
+    void addTask(TaskData data);
+    void addHabit(HabitData data);
+    void updateTaskName(int id, const QString& name);
+    void updateTaskDueDate(int id, const QDate& date);
+    void updateTaskStatus(int id, int status);
+    void updateHabitName(int id, const QString& name);
+    void updateHabitCreatedDate(int id, const QDate& date);
+    void updateHabitFrequency(int id, QString frequency);
+    void updateHabitStatus(int id, int status);
 
 private:
     QSqlDatabase m_db;
@@ -24,8 +51,6 @@ private:
      * @brief createTables Creates core database tables if they don't exist
      */
     void createTables();
-
-    QList<Task> getTaskAll();
 };
 
 #endif // DATABASE_H
