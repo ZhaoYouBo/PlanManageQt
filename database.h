@@ -23,9 +23,15 @@ struct HabitData {
 
 struct PlanData {
     int id; // Primary key
+    QString type;
     QString name; // Plan name
     QString target_frequency; // Habit Frequency
     int status; // Habit status
+};
+
+struct ReviewData {
+    QString reflection;
+    QString summary;
 };
 class Database
 {
@@ -34,6 +40,8 @@ public:
 
     QList<TaskData> getTaskByStatus(int status);
     QList<HabitData> getHabitByStatus(int status);
+    QList<PlanData> getPlanByDate(const QDate& date);
+    ReviewData getReviewByDate(const QDate& date);
     void addTask(TaskData data);
     void addHabit(HabitData data);
     void updateTaskName(int id, const QString& name);

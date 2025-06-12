@@ -53,6 +53,12 @@ private slots:
 
     void on_calendarWidget_clicked(const QDate &date);
 
+    void on_pushButton_savePlan_clicked();
+
+    void on_pushButton_saveReflection_clicked();
+
+    void on_pushButton_saveSummary_clicked();
+
 private:
     Ui::MainWindow *ui;
     Database m_dbManager; // Database manager
@@ -60,5 +66,6 @@ private:
     HabitModel* m_modelHabit;
     PlanModel* m_modelPlan;
     void init();
+    void saveData();
 };
 #endif // MAINWINDOW_H

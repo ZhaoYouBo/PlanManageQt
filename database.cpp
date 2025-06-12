@@ -36,7 +36,7 @@ void Database::createTables()
         "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
         "name TEXT NOT NULL, "
         "created_date DATE DEFAULT CURRENT_DATE, "
-        "target_frequency integer, "
+        "target_frequency TEXT, "
         "status INTEGER DEFAULT 0); "
     );
 
@@ -47,7 +47,8 @@ void Database::createTables()
         "task_id INTEGER, "
         "habit_id INTEGER, "
         "plan_date DATE NOT NULL, "
-        "sort_order INTEGER, "
+        "plan_name TEXT, "
+        "index_id INTEGER, "
         "status INTEGER DEFAULT 0, "
         "FOREIGN KEY (task_id) REFERENCES task(id) ON DELETE CASCADE, "
         "FOREIGN KEY (habit_id) REFERENCES habits(id) ON DELETE CASCADE, "
@@ -117,6 +118,55 @@ QList<HabitData> Database::getHabitByStatus(int status)
     }
 
     return habitDataList;
+}
+
+QList<PlanData> Database::getPlanByDate(const QDate &date)
+{
+    QList<PlanData> planDataList;
+
+    QSqlQuery query("SELECT task_id, habit_id, plan_name, status FROM daily_plan WHERE plan_date = ?;");
+    query.addBindValue(date);
+
+    if (!query.exec()) {
+        qDebug() << "Failed to get plan";
+        return planDataList;
+    }
+
+    while(query.next()) {
+        PlanData planData;
+        planData.name = query.value(2).toString();
+        planData.status = query.value(3).toInt();
+
+        if (!query.value(0).isNull()) {
+            planData.type = "任务";
+        } else if (!query.value(1).isNull()) {
+            planData.type = "习惯";
+        } else {
+            continue;
+        }
+
+        planDataList.append(planData);
+    }
+
+    return planDataList;
+}
+
+ReviewData Database::getReviewByDate(const QDate &date)
+{
+    ReviewData reviewData;
+
+    QSqlQuery query("SELECT reflection, summary FROM daiiy_review WHERE review_date = ?;");
+    query.addBindValue(date);
+
+    if (!query.exec() || !query.next()) {
+        qDebug() << "Failed to get habit";
+        return reviewData;
+    }
+
+    reviewData.reflection = query.value(0).toString();
+    reviewData.summary = query.value(1).toString();
+
+    return reviewData;
 }
 
 void Database::addTask(TaskData data)
@@ -216,7 +266,7 @@ void Database::updateHabitCreatedDate(int id, const QDate &date)
 void Database::updateHabitFrequency(int id, QString frequency)
 {
     QSqlQuery query;
-    query.prepare("UPDATE habits SET frequency = ? WHERE id = ?");
+    query.prepare("UPDATE habits SET target_frequency = ? WHERE id = ?");
     query.addBindValue(frequency);
     query.addBindValue(id);
     if (!query.exec()) {

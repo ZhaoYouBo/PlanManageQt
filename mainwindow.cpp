@@ -37,7 +37,7 @@ void MainWindow::init()
 
     m_modelTask->setHorizontalHeaderLabels({"ID", "任务名称", "创建日期", "截止日期", "完成日期", "完成状态"});
     m_modelHabit->setHorizontalHeaderLabels({"ID", "习惯名称", "创建日期", "习惯频率", "完成状态"});
-    m_modelPlan->setHorizontalHeaderLabels({"计划名称", "完成状态"});
+    m_modelPlan->setHorizontalHeaderLabels({"类型", "计划名称", "完成状态"});
 
     // Set the model to the table view
     ui->tableView_task->setModel(m_modelTask);
@@ -75,6 +75,39 @@ void MainWindow::init()
     ui->comboBox_habit->addItems(Utils::habitStatusList());
     ui->comboBox_task->setCurrentText("进行中");
     ui->comboBox_habit->setCurrentText("进行中");
+}
+
+void MainWindow::saveData()
+{
+    QAbstractItemModel* model = ui->tableView_plan->model();
+    if (!model) {
+        qDebug() << "Model is not set!";
+        return;
+    }
+
+    int rowCount = model->rowCount();
+
+    for (int row = 1; row <= rowCount; ++row) {
+        QString type = model->index(row - 1, 0).data(Qt::DisplayRole).toString();
+        if (type == "习惯")
+        {
+            int habitId;
+        }
+        else if (type == "任务")
+        {
+            int taskId;
+        }
+        else
+        {
+            continue;
+        }
+        QDate date = QDate::currentDate();
+        int indexId = row;
+        QString name = model->index(row - 1, 1).data(Qt::DisplayRole).toString();
+        QString status = model->index(row - 1, 2).data(Qt::DisplayRole).toString();
+
+        qDebug() << "Row" << row << ":" << type << name << status;
+    }
 }
 
 
@@ -284,8 +317,84 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
 {
     m_modelPlan->removeRows(0, m_modelPlan->rowCount());
 
+    QList<PlanData> planDataList;
+    planDataList = m_dbManager.getPlanByDate(date);
+    bool needAdd = true;
+
+    for (const PlanData &plan : planDataList)
+    {
+        if (plan.type == "习惯") needAdd = false;
+        QList<QStandardItem*> items;
+        items.append(new QStandardItem(plan.type));
+        items.append(new QStandardItem(plan.name));
+        items.append(new QStandardItem(Utils::planStatusToString(plan.status)));
+
+        m_modelPlan->appendRow(items);
+    }
+
+    ReviewData reviewData;
+    reviewData = m_dbManager.getReviewByDate(date);
+    ui->textEdit_reflection->setText(reviewData.reflection);
+    ui->textEdit_summary->setText(reviewData.summary);
+
+    ui->tableView_plan->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+
+    if (!needAdd)
+    {
+        return;
+    }
+
     QList<HabitData> habitDataList;
-    habitDataList = m_dbManager.getHabitByStatus(index);
+    habitDataList = m_dbManager.getHabitByStatus(0);
+
+    for (const HabitData &habit : habitDataList)
+    {
+        // Skip habits created after the selected date
+        if (habit.createdDate > date)
+            continue;
+
+        QString frequency = habit.target_frequency;
+        bool shouldAdd = false;
+
+        if (frequency == "每日一次")
+        {
+            shouldAdd = true;
+        }
+        else if (frequency.startsWith("每二日一次"))
+        {
+            int daysDiff = habit.createdDate.daysTo(date);
+            if (daysDiff % 2 == 0)
+                shouldAdd = true;
+        }
+        else if (frequency.startsWith("每三日一次"))
+        {
+            int daysDiff = habit.createdDate.daysTo(date);
+            if (daysDiff % 3 == 0)
+                shouldAdd = true;
+        }
+        else if (frequency.startsWith("每周周五"))
+        {
+            if (date.dayOfWeek() == 5)
+                shouldAdd = true;
+        }
+        else if (frequency.startsWith("每周周六"))
+        {
+            if (date.dayOfWeek() == 6)
+                shouldAdd = true;
+        }
+
+        if (shouldAdd)
+        {
+            QList<QStandardItem*> items;
+            items.append(new QStandardItem("习惯"));
+            items.append(new QStandardItem(habit.name));
+            items.append(new QStandardItem(Utils::planStatusToString(habit.status)));
+
+            m_modelPlan->appendRow(items);
+        }
+    }
+
+    ui->tableView_plan->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 
@@ -299,8 +408,27 @@ Qt::ItemFlags PlanModel::flags(const QModelIndex &index) const
 {
     switch (index.column()) {
     case 0:
+    case 1:
         return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     default:
         return QStandardItemModel::flags(index);
     }
 }
+
+void MainWindow::on_pushButton_savePlan_clicked()
+{
+    saveData();
+}
+
+
+void MainWindow::on_pushButton_saveReflection_clicked()
+{
+    saveData();
+}
+
+
+void MainWindow::on_pushButton_saveSummary_clicked()
+{
+    saveData();
+}
+

@@ -45,7 +45,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_4">
+         <widget class="QPushButton" name="pushButton_savePlan">
           <property name="text">
            <string>保存</string>
           </property>
@@ -83,7 +83,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_5">
+         <widget class="QPushButton" name="pushButton_saveReflection">
           <property name="text">
            <string>保存</string>
           </property>
@@ -121,7 +121,7 @@
          </spacer>
         </item>
         <item>
-         <widget class="QPushButton" name="pushButton_3">
+         <widget class="QPushButton" name="pushButton_saveSummary">
           <property name="text">
            <string>保存</string>
           </property>
