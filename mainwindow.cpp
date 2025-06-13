@@ -5,6 +5,8 @@
 #include "datedelegate.h"
 #include "taskstatusdelegate.h"
 #include "habitstatusdelegate.h"
+#include "planstatusdelegate.h"
+#include "plannamedelegate.h"
 #include "habitfrequencydelegate.h"
 #include "utils.h"
 #include <QDate>
@@ -66,6 +68,9 @@ void MainWindow::init()
     ui->tableView_habit->setItemDelegateForColumn(2, new DateDelegate(ui->tableView_habit));
     ui->tableView_habit->setItemDelegateForColumn(3, new HabitFrequencyDelegate(ui->tableView_habit));
     ui->tableView_habit->setItemDelegateForColumn(4, new HabitStatusDelegate(ui->tableView_habit));
+    PlanNameDelegate *planNameDelegate = new PlanNameDelegate(&m_dbManager, ui->tableView_plan, this);
+    ui->tableView_plan->setItemDelegateForColumn(1, planNameDelegate);
+    ui->tableView_plan->setItemDelegateForColumn(2, new PlanStatusDelegate(ui->tableView_plan));
 
 
     connect(m_modelTask, &TaskModel::dataChanged, this, &MainWindow::onTableViewTaskDataChanged);
@@ -75,6 +80,8 @@ void MainWindow::init()
     ui->comboBox_habit->addItems(Utils::habitStatusList());
     ui->comboBox_task->setCurrentText("进行中");
     ui->comboBox_habit->setCurrentText("进行中");
+
+    ui->calendarWidget->clicked(QDate::currentDate());
 }
 
 void MainWindow::saveData()
@@ -89,25 +96,29 @@ void MainWindow::saveData()
 
     for (int row = 1; row <= rowCount; ++row) {
         QString type = model->index(row - 1, 0).data(Qt::DisplayRole).toString();
+        int indexId = row;
+        QString name = model->index(row - 1, 1).data(Qt::DisplayRole).toString();
+        int status = Utils::planStatusFromString(model->index(row - 1, 2).data(Qt::DisplayRole).toString());
         if (type == "习惯")
         {
-            int habitId;
+            int habitId = m_dbManager.getHabitIdByName(name);
+            m_dbManager.updateHabitPlan(indexId, name, status, habitId);
         }
         else if (type == "任务")
         {
-            int taskId;
+            int taskId = m_dbManager.getTaskIdByName(name);
+            m_dbManager.updateTaskPlan(indexId, name, status, taskId);
         }
         else
         {
             continue;
         }
-        QDate date = QDate::currentDate();
-        int indexId = row;
-        QString name = model->index(row - 1, 1).data(Qt::DisplayRole).toString();
-        QString status = model->index(row - 1, 2).data(Qt::DisplayRole).toString();
-
-        qDebug() << "Row" << row << ":" << type << name << status;
     }
+
+    QString reflection = ui->textEdit_reflection->toPlainText();
+    QString summary = ui->textEdit_summary->toPlainText();
+
+    m_dbManager.updateReview(reflection, summary);
 }
 
 
@@ -229,8 +240,7 @@ void MainWindow::on_comboBox_task_currentIndexChanged(int index)
 {
     m_modelTask->removeRows(0, m_modelTask->rowCount());
 
-    QList<TaskData> taskDataList;
-    taskDataList = m_dbManager.getTaskByStatus(index);
+    QList<TaskData> taskDataList = m_dbManager.getTaskByStatus(index);
 
     for (const TaskData &taskData : std::as_const(taskDataList)) {
         QList<QStandardItem*> items;
@@ -247,6 +257,11 @@ void MainWindow::on_comboBox_task_currentIndexChanged(int index)
         }
 
         m_modelTask->appendRow(items);
+    }
+
+    PlanNameDelegate* planNameDelegate = qobject_cast<PlanNameDelegate*>(ui->tableView_plan->itemDelegateForColumn(1));
+    if (planNameDelegate) {
+        planNameDelegate->refreshTaskNames();
     }
 
     ui->tableView_task->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -408,7 +423,6 @@ Qt::ItemFlags PlanModel::flags(const QModelIndex &index) const
 {
     switch (index.column()) {
     case 0:
-    case 1:
         return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     default:
         return QStandardItemModel::flags(index);
@@ -430,5 +444,48 @@ void MainWindow::on_pushButton_saveReflection_clicked()
 void MainWindow::on_pushButton_saveSummary_clicked()
 {
     saveData();
+}
+
+
+void MainWindow::on_pushButton_delete_clicked()
+{
+    QTableView *tableView = ui->tableView_plan;
+    QAbstractItemModel *model = tableView->model();
+    QItemSelectionModel *selectionModel = tableView->selectionModel();
+
+    if (!model || !selectionModel) {
+        qDebug() << "Model or selection model is null!";
+        return;
+    }
+
+    QModelIndexList selectedRows = selectionModel->selectedRows();
+    if (selectedRows.isEmpty()) {
+        qDebug() << "No row selected!";
+        return;
+    }
+
+    for (int i = selectedRows.size() - 1; i >= 0; --i) {
+        int row = selectedRows[i].row();
+        model->removeRow(row);
+    }
+}
+
+
+void MainWindow::on_pushButton_insert_clicked()
+{
+    QTableView *tableView = ui->tableView_plan;
+    QStandardItemModel *model = qobject_cast<QStandardItemModel*>(tableView->model());
+
+    if (!model) {
+        qDebug() << "Model is not a QStandardItemModel!";
+        return;
+    }
+
+    QList<QStandardItem*> items;
+    items.append(new QStandardItem("任务"));
+    items.append(new QStandardItem(""));
+    items.append(new QStandardItem("进行中"));
+
+    model->appendRow(items);
 }
 

@@ -17,6 +17,7 @@ public:
     static QStringList planStatusList();
     static int taskStatusFromString(const QString &str);
     static int habitStatusFromString(const QString &str);
+    static int planStatusFromString(const QString &str);
 };
 
 #endif // UTILS_H

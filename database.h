@@ -51,6 +51,11 @@ public:
     void updateHabitCreatedDate(int id, const QDate& date);
     void updateHabitFrequency(int id, QString frequency);
     void updateHabitStatus(int id, int status);
+    int getHabitIdByName(QString name);
+    int getTaskIdByName(QString name);
+    void updateHabitPlan(int index, QString name, int status, int habitId);
+    void updateTaskPlan(int index, QString name, int status, int taskId);
+    void updateReview(QString reflection, QString summary);
 
 private:
     QSqlDatabase m_db;

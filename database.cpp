@@ -155,11 +155,11 @@ ReviewData Database::getReviewByDate(const QDate &date)
 {
     ReviewData reviewData;
 
-    QSqlQuery query("SELECT reflection, summary FROM daiiy_review WHERE review_date = ?;");
+    QSqlQuery query("SELECT reflection, summary FROM daily_review WHERE review_date = ?;");
     query.addBindValue(date);
 
     if (!query.exec() || !query.next()) {
-        qDebug() << "Failed to get habit";
+        qDebug() << "Failed to get review";
         return reviewData;
     }
 
@@ -282,5 +282,131 @@ void Database::updateHabitStatus(int id, int status)
     query.addBindValue(id);
     if (!query.exec()) {
         qDebug() << "Failed to update status:" << query.lastError().text();
+    }
+}
+
+int Database::getHabitIdByName(QString name)
+{
+    int habitId;
+
+    QSqlQuery query("SELECT id FROM habits WHERE name = ?;");
+    query.addBindValue(name);
+
+    if (!query.exec() || !query.next()) {
+        qDebug() << "Failed to get habitId";
+        return habitId;
+    }
+
+    habitId = query.value(0).toInt();
+
+    return habitId;
+}
+
+int Database::getTaskIdByName(QString name)
+{
+    int taskId;
+
+    QSqlQuery query("SELECT id FROM task WHERE name = ?;");
+    query.addBindValue(name);
+
+    if (!query.exec() || !query.next()) {
+        qDebug() << "Failed to get taskId";
+        return taskId;
+    }
+
+    taskId = query.value(0).toInt();
+
+    return taskId;
+}
+
+void Database::updateHabitPlan(int index, QString name, int status, int habitId)
+{
+    QSqlQuery query;
+    query.prepare("UPDATE daily_plan SET habit_id = ?, plan_name = ?, status = ? WHERE plan_date = ? AND index_id = ?");
+    query.addBindValue(habitId);
+    query.addBindValue(name);
+    query.addBindValue(status);
+    query.addBindValue(QDate::currentDate());
+    query.addBindValue(index);
+
+    if (!query.exec())
+    {
+        qDebug() << "Failed to update Habit Plan data:" << query.lastError().text();
+        return;
+    }
+
+    if (query.numRowsAffected() == 0)
+    {
+        query.prepare("INSERT INTO daily_plan (habit_id, plan_date, plan_name, index_id, status) VALUES (?, ?, ?, ?, ?)");
+        query.addBindValue(habitId);
+        query.addBindValue(QDate::currentDate());
+        query.addBindValue(name);
+        query.addBindValue(index);
+        query.addBindValue(status);
+
+        if (!query.exec())
+        {
+            qDebug() << "Failed to insert Habit Plan data:" << query.lastError().text();
+        }
+    }
+}
+
+void Database::updateTaskPlan(int index, QString name, int status, int taskId)
+{
+    QSqlQuery query;
+    query.prepare("UPDATE daily_plan SET task_id = ?, plan_name = ?, status = ? WHERE plan_date = ? AND index_id = ?");
+    query.addBindValue(taskId);
+    query.addBindValue(name);
+    query.addBindValue(status);
+    query.addBindValue(QDate::currentDate());
+    query.addBindValue(index);
+
+    if (!query.exec())
+    {
+        qDebug() << "Failed to update Task Plan data:" << query.lastError().text();
+        return;
+    }
+
+    if (query.numRowsAffected() == 0)
+    {
+        query.prepare("INSERT INTO daily_plan (task_id, plan_date, plan_name, index_id, status) VALUES (?, ?, ?, ?, ?)");
+        query.addBindValue(taskId);
+        query.addBindValue(QDate::currentDate());
+        query.addBindValue(name);
+        query.addBindValue(index);
+        query.addBindValue(status);
+
+        if (!query.exec())
+        {
+            qDebug() << "Failed to insert Task Plan data:" << query.lastError().text();
+        }
+    }
+}
+
+void Database::updateReview(QString reflection, QString summary)
+{
+    QSqlQuery query;
+    query.prepare("UPDATE daily_review SET reflection = ?, summary = ? WHERE review_date = ?");
+    query.addBindValue(reflection);
+    query.addBindValue(summary);
+    query.addBindValue(QDate::currentDate());
+
+    if (!query.exec())
+    {
+        qDebug() << "Failed to update review data:" << query.lastError().text();
+        return;
+    }
+
+    if (query.numRowsAffected() == 0)
+    {
+        query.prepare("INSERT INTO daily_review (review_date, reflection, summary) VALUES (?, ?, ?)");
+        query.addBindValue(QDate::currentDate());
+        query.addBindValue(reflection);
+        query.addBindValue(summary);
+
+        if (!query.exec())
+        {
+            qDebug() << "Failed to insert review data:" << query.lastError().text();
+        }
     }
 }

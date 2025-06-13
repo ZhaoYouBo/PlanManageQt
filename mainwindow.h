@@ -59,6 +59,10 @@ private slots:
 
     void on_pushButton_saveSummary_clicked();
 
+    void on_pushButton_delete_clicked();
+
+    void on_pushButton_insert_clicked();
+
 private:
     Ui::MainWindow *ui;
     Database m_dbManager; // Database manager

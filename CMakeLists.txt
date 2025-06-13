@@ -20,6 +20,8 @@ qt_add_executable(PlanManageQt
     addhabitdialog.h addhabitdialog.cpp addhabitdialog.ui
     habitstatusdelegate.h habitstatusdelegate.cpp
     habitfrequencydelegate.h habitfrequencydelegate.cpp
+    planstatusdelegate.h planstatusdelegate.cpp
+    plannamedelegate.h plannamedelegate.cpp
 )
 
 target_link_libraries(PlanManageQt

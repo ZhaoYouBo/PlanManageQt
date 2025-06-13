@@ -66,3 +66,10 @@ int Utils::habitStatusFromString(const QString &str)
     int idx = list.indexOf(str);
     return idx >= 0 ? idx : -1;
 }
+
+int Utils::planStatusFromString(const QString &str)
+{
+    QStringList list = planStatusList();
+    int idx = list.indexOf(str);
+    return idx >= 0 ? idx : -1;
+}
