@@ -70,16 +70,24 @@ void Database::createTables()
 QList<TaskData> Database::getTaskByStatus(int status)
 {
     QList<TaskData> taskDataList;
+    QSqlQuery query;
 
-    QSqlQuery query("SELECT id, name, created_date, due_date, completed_date, status FROM task WHERE status = ?;");
-    query.addBindValue(status);
-
-    if (!query.exec()) {
-        qDebug() << "Failed to get task";
-        return taskDataList;
+    if (status == 0) {
+        if (!query.exec("SELECT id, name, created_date, due_date, completed_date, status FROM task")) {
+            qDebug() << "Failed to get task";
+            return taskDataList;
+        }
+    } else {
+        status = status - 1;
+        query.prepare("SELECT id, name, created_date, due_date, completed_date, status FROM task WHERE status = ?");
+        query.addBindValue(status);
+        if (!query.exec()) {
+            qDebug() << "Failed to get task";
+            return taskDataList;
+        }
     }
 
-    while(query.next()) {
+    while (query.next()) {
         TaskData taskData;
         taskData.id = query.value(0).toInt();
         taskData.name = query.value(1).toString();
@@ -87,7 +95,6 @@ QList<TaskData> Database::getTaskByStatus(int status)
         taskData.dueDate = query.value(3).toDate();
         taskData.completedDate = query.value(4).toDate();
         taskData.status = query.value(5).toInt();
-
         taskDataList.append(taskData);
     }
 
@@ -97,13 +104,21 @@ QList<TaskData> Database::getTaskByStatus(int status)
 QList<HabitData> Database::getHabitByStatus(int status)
 {
     QList<HabitData> habitDataList;
+    QSqlQuery query;
 
-    QSqlQuery query("SELECT id, name, created_date, target_frequency, status FROM habits WHERE status = ?;");
-    query.addBindValue(status);
-
-    if (!query.exec()) {
-        qDebug() << "Failed to get habit";
-        return habitDataList;
+    if (status == 0) {
+        if (!query.exec("SELECT id, name, created_date, target_frequency, status FROM habits")) {
+            qDebug() << "Failed to get habit";
+            return habitDataList;
+        }
+    } else {
+        status = status - 1;
+        query.prepare("SELECT id, name, created_date, target_frequency, status FROM habits WHERE status = ?");
+        query.addBindValue(status);
+        if (!query.exec()) {
+            qDebug() << "Failed to get habit";
+            return habitDataList;
+        }
     }
 
     while(query.next()) {
@@ -319,14 +334,14 @@ int Database::getTaskIdByName(QString name)
     return taskId;
 }
 
-void Database::updateHabitPlan(int index, QString name, int status, int habitId)
+void Database::updateHabitPlan(int index, QString name, int status, int habitId, QDate date)
 {
     QSqlQuery query;
     query.prepare("UPDATE daily_plan SET habit_id = ?, plan_name = ?, status = ? WHERE plan_date = ? AND index_id = ?");
     query.addBindValue(habitId);
     query.addBindValue(name);
     query.addBindValue(status);
-    query.addBindValue(QDate::currentDate());
+    query.addBindValue(date);
     query.addBindValue(index);
 
     if (!query.exec())
@@ -339,7 +354,7 @@ void Database::updateHabitPlan(int index, QString name, int status, int habitId)
     {
         query.prepare("INSERT INTO daily_plan (habit_id, plan_date, plan_name, index_id, status) VALUES (?, ?, ?, ?, ?)");
         query.addBindValue(habitId);
-        query.addBindValue(QDate::currentDate());
+        query.addBindValue(date);
         query.addBindValue(name);
         query.addBindValue(index);
         query.addBindValue(status);
@@ -351,14 +366,14 @@ void Database::updateHabitPlan(int index, QString name, int status, int habitId)
     }
 }
 
-void Database::updateTaskPlan(int index, QString name, int status, int taskId)
+void Database::updateTaskPlan(int index, QString name, int status, int taskId, QDate date)
 {
     QSqlQuery query;
     query.prepare("UPDATE daily_plan SET task_id = ?, plan_name = ?, status = ? WHERE plan_date = ? AND index_id = ?");
     query.addBindValue(taskId);
     query.addBindValue(name);
     query.addBindValue(status);
-    query.addBindValue(QDate::currentDate());
+    query.addBindValue(date);
     query.addBindValue(index);
 
     if (!query.exec())
@@ -371,7 +386,7 @@ void Database::updateTaskPlan(int index, QString name, int status, int taskId)
     {
         query.prepare("INSERT INTO daily_plan (task_id, plan_date, plan_name, index_id, status) VALUES (?, ?, ?, ?, ?)");
         query.addBindValue(taskId);
-        query.addBindValue(QDate::currentDate());
+        query.addBindValue(date);
         query.addBindValue(name);
         query.addBindValue(index);
         query.addBindValue(status);

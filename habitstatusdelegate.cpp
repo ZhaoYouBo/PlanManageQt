@@ -1,6 +1,7 @@
 #include "habitstatusdelegate.h"
 #include "utils.h"
 #include <QComboBox>
+#include <QPainter>
 
 HabitStatusDelegate::HabitStatusDelegate(QObject *parent)
     : QStyledItemDelegate(parent)
@@ -34,4 +35,15 @@ void HabitStatusDelegate::setModelData(QWidget *editor, QAbstractItemModel *mode
 void HabitStatusDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     editor->setGeometry(option.rect);
+}
+
+void HabitStatusDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    const QMap<QString, QColor>& colorMap = Utils::statusColorMap();
+    QString status = index.data(Qt::DisplayRole).toString();
+    QColor bgColor = colorMap.value(status, option.palette.base().color());
+
+    painter->fillRect(option.rect, bgColor);
+    painter->setPen(Qt::black);
+    painter->drawText(option.rect, Qt::AlignCenter, status);
 }

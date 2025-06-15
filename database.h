@@ -53,8 +53,8 @@ public:
     void updateHabitStatus(int id, int status);
     int getHabitIdByName(QString name);
     int getTaskIdByName(QString name);
-    void updateHabitPlan(int index, QString name, int status, int habitId);
-    void updateTaskPlan(int index, QString name, int status, int taskId);
+    void updateHabitPlan(int index, QString name, int status, int habitId, QDate date);
+    void updateTaskPlan(int index, QString name, int status, int taskId, QDate date);
     void updateReview(QString reflection, QString summary);
 
 private:

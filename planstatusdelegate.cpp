@@ -1,6 +1,7 @@
 #include "planstatusdelegate.h"
 #include "utils.h"
 #include <QComboBox>
+#include <QPainter>
 
 PlanStatusDelegate::PlanStatusDelegate(QObject *parent)
     : QStyledItemDelegate{parent}
@@ -32,4 +33,15 @@ void PlanStatusDelegate::setModelData(QWidget *editor, QAbstractItemModel *model
 void PlanStatusDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     editor->setGeometry(option.rect);
+}
+
+void PlanStatusDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    const QMap<QString, QColor>& colorMap = Utils::statusColorMap();
+    QString status = index.data(Qt::DisplayRole).toString();
+    QColor bgColor = colorMap.value(status, option.palette.base().color());
+
+    painter->fillRect(option.rect, bgColor);
+    painter->setPen(Qt::black);
+    painter->drawText(option.rect, Qt::AlignCenter, status);
 }

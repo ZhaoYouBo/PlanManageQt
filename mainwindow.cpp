@@ -76,8 +76,12 @@ void MainWindow::init()
     connect(m_modelTask, &TaskModel::dataChanged, this, &MainWindow::onTableViewTaskDataChanged);
     connect(m_modelHabit, &HabitModel::dataChanged, this, &MainWindow::onTableViewHabitDataChanged);
 
-    ui->comboBox_task->addItems(Utils::taskStatusList());
-    ui->comboBox_habit->addItems(Utils::habitStatusList());
+    QStringList taskStatuses = Utils::taskStatusList();
+    taskStatuses.insert(0, "全部");
+    ui->comboBox_task->addItems(taskStatuses);
+    QStringList habitStatuses = Utils::habitStatusList();
+    habitStatuses.insert(0, "全部");
+    ui->comboBox_habit->addItems(habitStatuses);
     ui->comboBox_task->setCurrentText("进行中");
     ui->comboBox_habit->setCurrentText("进行中");
 
@@ -92,6 +96,8 @@ void MainWindow::saveData()
         return;
     }
 
+    QDate selectedDate = ui->calendarWidget->selectedDate();
+
     int rowCount = model->rowCount();
 
     for (int row = 1; row <= rowCount; ++row) {
@@ -102,12 +108,12 @@ void MainWindow::saveData()
         if (type == "习惯")
         {
             int habitId = m_dbManager.getHabitIdByName(name);
-            m_dbManager.updateHabitPlan(indexId, name, status, habitId);
+            m_dbManager.updateHabitPlan(indexId, name, status, habitId, selectedDate);
         }
         else if (type == "任务")
         {
             int taskId = m_dbManager.getTaskIdByName(name);
-            m_dbManager.updateTaskPlan(indexId, name, status, taskId);
+            m_dbManager.updateTaskPlan(indexId, name, status, taskId, selectedDate);
         }
         else
         {

@@ -1,5 +1,6 @@
 #include "utils.h"
 #include <QStringList>
+#include <QMap>
 
 Utils::Utils()
 {
@@ -72,4 +73,16 @@ int Utils::planStatusFromString(const QString &str)
     QStringList list = planStatusList();
     int idx = list.indexOf(str);
     return idx >= 0 ? idx : -1;
+}
+
+const QMap<QString, QColor>& Utils::statusColorMap()
+{
+    static const QMap<QString, QColor> map = {
+        {"进行中", QColor(0, 122, 204)},
+        {"已完成", QColor(50, 205, 50)},
+        {"未完成", QColor(255, 87, 34)},
+        {"超时完成", QColor(255, 165, 0)},
+        {"已取消", QColor(128, 128, 128)}
+    };
+    return map;
 }
