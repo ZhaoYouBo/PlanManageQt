@@ -11,6 +11,10 @@
 #include "utils.h"
 #include <QDate>
 #include <QFile>
+#include <QLineSeries>
+#include <QDateTimeAxis>
+#include <QValueAxis>
+#include <QDateTime>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -28,6 +32,7 @@ MainWindow::MainWindow(QWidget *parent)
     this->setStyleSheet(file.readAll());
 
     init();
+    initChart();
 }
 
 MainWindow::~MainWindow()
@@ -89,16 +94,70 @@ void MainWindow::init()
     ui->calendarWidget->clicked(QDate::currentDate());
 
     // Antomatically adjust table width
-    // 初始化时调整列宽
     adjustTableWidth(ui->tableView_plan);
     adjustTableWidth(ui->tableView_task);
     adjustTableWidth(ui->tableView_habit);
 
-    // 监听视口大小变化
     ui->tableView_plan->viewport()->installEventFilter(this);
     ui->tableView_task->viewport()->installEventFilter(this);
     ui->tableView_habit->viewport()->installEventFilter(this);
 }
+
+void MainWindow::initChart()
+{
+    m_chartViewPlan = new QChartView(this);
+    m_chartViewPlan->setRenderHint(QPainter::Antialiasing);
+
+    QChart *chart = new QChart();
+    chart->setTitle("任务完成情况");
+
+    QDate startDate = QDate::currentDate().addDays(-15);
+    QDate endDate = QDate::currentDate();
+    QMap<QDate,double> resultDate = m_dbManager.getPlanNumberByDate(startDate, endDate);
+
+    if (!resultDate.empty())
+    {
+        QLineSeries * series = new QLineSeries();
+
+        for (auto it = resultDate.begin(); it != resultDate.end(); ++it) {
+            QDateTime dateTime(it.key(), QTime(0, 0, 0));
+            series->append(dateTime.toMSecsSinceEpoch(), it.value());
+        }
+
+        QDateTimeAxis *axisX = new QDateTimeAxis();
+        axisX->setFormat("MM-dd");
+        axisX->setTitleText("日期");
+        axisX->setTickCount(16);
+
+        QDateTime startDateTime(startDate, QTime(0, 0, 0));
+        QDateTime endDateTime(endDate, QTime(0, 0, 0));
+        // axisX->setLabelsAngle(-90);
+        axisX->setRange(startDateTime, endDateTime);
+
+        QValueAxis *axisY = new QValueAxis();
+        axisY->setLabelFormat("%.2f");
+        axisY->setTitleText("完成率");
+        axisY->setTickCount(6);
+        axisY->setRange(0.0, 1.0);
+
+        chart->addSeries(series);
+        chart->addAxis(axisX, Qt::AlignBottom);
+        chart->addAxis(axisY, Qt::AlignLeft);
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
+    }
+    else
+    {
+        chart->addSeries(new QLineSeries());
+        chart->setTitle("暂无数据");
+    }
+    chart->legend()->hide();
+
+    m_chartViewPlan->setChart(chart);
+
+    ui->horizontalLayout->insertWidget(1, m_chartViewPlan);
+}
+
 
 bool MainWindow::eventFilter(QObject *obj, QEvent *event)
 {

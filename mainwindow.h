@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QStandardItemModel>
 #include <QTableView>
+#include <QChartView>
 #include "database.h"
 
 QT_BEGIN_NAMESPACE
@@ -71,7 +72,12 @@ private:
     TaskModel* m_modelTask; // Table model
     HabitModel* m_modelHabit;
     PlanModel* m_modelPlan;
+    QChartView *m_chartViewPlan;
     void init();
+    /**
+     * @brief Initialize chart
+     */
+    void initChart();
     void saveData();
     void adjustTableWidth(QTableView *tableView);
 };

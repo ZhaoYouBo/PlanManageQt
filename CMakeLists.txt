@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.19)
 project(PlanManageQt LANGUAGES CXX)
 
-find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Sql)
+find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Sql Charts)
 
 qt_standard_project_setup()
 
@@ -26,9 +26,10 @@ qt_add_executable(PlanManageQt
 
 target_link_libraries(PlanManageQt
     PRIVATE
-        Qt::Core
-        Qt::Widgets
-        Qt::Sql
+        Qt6::Core
+        Qt6::Widgets
+        Qt6::Sql
+        Qt6::Charts
 )
 
 include(GNUInstallDirs)
