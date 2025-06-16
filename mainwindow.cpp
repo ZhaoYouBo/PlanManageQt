@@ -31,8 +31,8 @@ MainWindow::MainWindow(QWidget *parent)
     file.open(QFile::ReadOnly);
     this->setStyleSheet(file.readAll());
 
-    init();
     initChart();
+    init();
 }
 
 MainWindow::~MainWindow()
@@ -473,6 +473,60 @@ void MainWindow::on_comboBox_habit_currentIndexChanged(int index)
 
 void MainWindow::on_calendarWidget_clicked(const QDate &date)
 {
+    // Update the chart
+    QChart *chart = m_chartViewPlan->chart();
+    chart->removeAllSeries(); // Clear existing series
+
+    QDate startDate = date.addDays(-15);
+    QMap<QDate, double> resultDate = m_dbManager.getPlanNumberByDate(startDate, date);
+
+    QDateTimeAxis *axisX = nullptr;
+    QValueAxis *axisY = nullptr;
+
+    foreach (QAbstractAxis* ax, chart->axes(Qt::Horizontal)) {
+        axisX = qobject_cast<QDateTimeAxis*>(ax);
+    }
+    foreach (QAbstractAxis* ay, chart->axes(Qt::Vertical)) {
+        axisY = qobject_cast<QValueAxis*>(ay);
+    }
+
+    if (!axisX) {
+        axisX = new QDateTimeAxis();
+        chart->addAxis(axisX, Qt::AlignBottom);
+    }
+    if (!axisY) {
+        axisY = new QValueAxis();
+        chart->addAxis(axisY, Qt::AlignLeft);
+    }
+
+    axisX->setFormat("MM-dd");
+    axisX->setTitleText("日期");
+    axisX->setTickCount(16);
+    axisX->setRange(QDateTime(date.addDays(-15), QTime(0,0,0)), QDateTime(date, QTime(0,0,0)));
+
+    axisY->setLabelFormat("%.2f");
+    axisY->setTitleText("完成率");
+    axisY->setTickCount(6);
+    axisY->setRange(0.0, 1.0);
+
+    chart->removeAllSeries();
+
+    if (!resultDate.empty()) {
+        QLineSeries *series = new QLineSeries();
+        for (auto it = resultDate.begin(); it != resultDate.end(); ++it) {
+            series->append(QDateTime(it.key(), QTime(0,0,0)).toMSecsSinceEpoch(), it.value());
+        }
+        chart->addSeries(series);
+        series->attachAxis(axisX);
+        series->attachAxis(axisY);
+        chart->setTitle("任务完成情况");
+    } else {
+        chart->addSeries(new QLineSeries());
+        chart->setTitle("暂无数据");
+    }
+
+    chart->legend()->hide();
+
     m_modelPlan->removeRows(0, m_modelPlan->rowCount());
 
     QList<PlanData> planDataList;
