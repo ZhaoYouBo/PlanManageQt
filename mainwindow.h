@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <QStandardItemModel>
+#include <QTableView>
 #include "database.h"
 
 QT_BEGIN_NAMESPACE
@@ -40,6 +41,7 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    bool eventFilter(QObject *obj, QEvent *event);
 private slots:
     void on_pushButton_add_task_clicked();
     void onTableViewTaskDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
@@ -71,5 +73,6 @@ private:
     PlanModel* m_modelPlan;
     void init();
     void saveData();
+    void adjustTableWidth(QTableView *tableView);
 };
 #endif // MAINWINDOW_H

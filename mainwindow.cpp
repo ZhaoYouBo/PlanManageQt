@@ -10,6 +10,7 @@
 #include "habitfrequencydelegate.h"
 #include "utils.h"
 #include <QDate>
+#include <QFile>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,6 +22,10 @@ MainWindow::MainWindow(QWidget *parent)
     this->showMaximized(); // Show the window maximized
 
     this->setWindowTitle("计划管理软件"); // Set window title
+
+    QFile file(QCoreApplication::applicationDirPath() + "/resource/Ubuntu.qss");
+    file.open(QFile::ReadOnly);
+    this->setStyleSheet(file.readAll());
 
     init();
 }
@@ -54,10 +59,6 @@ void MainWindow::init()
     ui->tableView_habit->setWordWrap(true);
     ui->tableView_plan->setWordWrap(true);
 
-    ui->tableView_task->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->tableView_habit->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    ui->tableView_plan->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-
     // Adjust row height based on content
     ui->tableView_task->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView_habit->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -86,6 +87,37 @@ void MainWindow::init()
     ui->comboBox_habit->setCurrentText("进行中");
 
     ui->calendarWidget->clicked(QDate::currentDate());
+
+    // Antomatically adjust table width
+    // 初始化时调整列宽
+    adjustTableWidth(ui->tableView_plan);
+    adjustTableWidth(ui->tableView_task);
+    adjustTableWidth(ui->tableView_habit);
+
+    // 监听视口大小变化
+    ui->tableView_plan->viewport()->installEventFilter(this);
+    ui->tableView_task->viewport()->installEventFilter(this);
+    ui->tableView_habit->viewport()->installEventFilter(this);
+}
+
+bool MainWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::Resize)
+    {
+        if (obj == ui->tableView_plan->viewport())
+        {
+            adjustTableWidth(ui->tableView_plan);
+        }
+        else if (obj == ui->tableView_task->viewport())
+        {
+            adjustTableWidth(ui->tableView_task);
+        }
+        else if (obj == ui->tableView_habit->viewport())
+        {
+            adjustTableWidth(ui->tableView_habit);
+        }
+    }
+    return QObject::eventFilter(obj, event);
 }
 
 void MainWindow::saveData()
@@ -125,6 +157,53 @@ void MainWindow::saveData()
     QString summary = ui->textEdit_summary->toPlainText();
 
     m_dbManager.updateReview(reflection, summary);
+}
+
+void MainWindow::adjustTableWidth(QTableView *tableView)
+{
+    if (!tableView || !tableView->model())
+        return;
+
+    tableView->resizeColumnsToContents();
+
+    int totalWidth = 0;
+    int columnCount = tableView->horizontalHeader()->count();
+
+    for (int i = 0; i < columnCount; ++i)
+    {
+        totalWidth += tableView->horizontalHeader()->sectionSize(i);
+    }
+
+    int viewportWidth = tableView->viewport()->width();
+
+    if (totalWidth > 0 && totalWidth != viewportWidth)
+    {
+        double factor = static_cast<double>(viewportWidth) / totalWidth;
+
+        for (int i = 0; i < columnCount; ++i)
+        {
+            int originalWidth = tableView->horizontalHeader()->sectionSize(i);
+            int newWidth = static_cast<int>(originalWidth * factor);
+            tableView->setColumnWidth(i, newWidth);
+        }
+    }
+    else
+    {
+        return;
+    }
+
+    int adjustedTotalWidth = 0;
+    for (int i = 0; i < columnCount; ++i)
+    {
+        adjustedTotalWidth += tableView->columnWidth(i);
+    }
+
+    int delta = viewportWidth - adjustedTotalWidth;
+    if (delta != 0 && columnCount > 0)
+    {
+        int lastColumnIndex = columnCount - 1;
+        tableView->setColumnWidth(lastColumnIndex, tableView->columnWidth(lastColumnIndex) + delta);
+    }
 }
 
 
@@ -269,8 +348,7 @@ void MainWindow::on_comboBox_task_currentIndexChanged(int index)
     if (planNameDelegate) {
         planNameDelegate->refreshTaskNames();
     }
-
-    ui->tableView_task->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    adjustTableWidth(ui->tableView_task);
 }
 
 
@@ -330,7 +408,7 @@ void MainWindow::on_comboBox_habit_currentIndexChanged(int index)
         m_modelHabit->appendRow(items);
     }
 
-    ui->tableView_habit->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
+    adjustTableWidth(ui->tableView_habit);
 }
 
 
@@ -350,6 +428,8 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
         items.append(new QStandardItem(plan.name));
         items.append(new QStandardItem(Utils::planStatusToString(plan.status)));
 
+        items[0]->setTextAlignment(Qt::AlignCenter);
+
         m_modelPlan->appendRow(items);
     }
 
@@ -357,8 +437,6 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
     reviewData = m_dbManager.getReviewByDate(date);
     ui->textEdit_reflection->setText(reviewData.reflection);
     ui->textEdit_summary->setText(reviewData.summary);
-
-    ui->tableView_plan->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 
     if (!needAdd)
     {
@@ -410,12 +488,11 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
             items.append(new QStandardItem("习惯"));
             items.append(new QStandardItem(habit.name));
             items.append(new QStandardItem(Utils::planStatusToString(habit.status)));
+            items[0]->setTextAlignment(Qt::AlignCenter);
 
             m_modelPlan->appendRow(items);
         }
     }
-
-    ui->tableView_plan->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 
