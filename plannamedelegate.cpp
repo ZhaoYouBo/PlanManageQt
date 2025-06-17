@@ -49,7 +49,7 @@ void PlanNameDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionV
 void PlanNameDelegate::refreshTaskNames()
 {
     m_taskNames.clear();
-    QList<TaskData> tasks = m_dbManager->getTaskByStatus(0);
+    QList<TaskData> tasks = m_dbManager->getTaskByStatus(1);
     for (const TaskData &task : std::as_const(tasks)) {
         m_taskNames << task.name;
     }
