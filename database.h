@@ -56,7 +56,7 @@ public:
     int getTaskIdByName(QString name);
     void updateHabitPlan(int index, QString name, int status, int habitId, QDate date);
     void updateTaskPlan(int index, QString name, int status, int taskId, QDate date);
-    void updateReview(QString reflection, QString summary);
+    void updateReview(QString reflection, QString summary, QDate date);
 
 private:
     QSqlDatabase m_db;

@@ -215,7 +215,7 @@ void MainWindow::saveData()
     QString reflection = ui->textEdit_reflection->toPlainText();
     QString summary = ui->textEdit_summary->toPlainText();
 
-    m_dbManager.updateReview(reflection, summary);
+    m_dbManager.updateReview(reflection, summary, selectedDate);
 }
 
 void MainWindow::adjustTableWidth(QTableView *tableView)

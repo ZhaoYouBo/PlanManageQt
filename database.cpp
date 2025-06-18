@@ -345,7 +345,7 @@ void Database::updateHabitStatus(int id, int status)
 
 int Database::getHabitIdByName(QString name)
 {
-    int habitId;
+    int habitId = 0;
 
     QSqlQuery query("SELECT id "
                     "FROM habits "
@@ -363,7 +363,7 @@ int Database::getHabitIdByName(QString name)
 
 int Database::getTaskIdByName(QString name)
 {
-    int taskId;
+    int taskId = 0;
 
     QSqlQuery query("SELECT id "
                     "FROM task "
@@ -446,7 +446,7 @@ void Database::updateTaskPlan(int index, QString name, int status, int taskId, Q
     }
 }
 
-void Database::updateReview(QString reflection, QString summary)
+void Database::updateReview(QString reflection, QString summary, QDate date)
 {
     QSqlQuery query;
     query.prepare("UPDATE daily_review "
@@ -454,7 +454,7 @@ void Database::updateReview(QString reflection, QString summary)
                   "WHERE review_date = ?");
     query.addBindValue(reflection);
     query.addBindValue(summary);
-    query.addBindValue(QDate::currentDate());
+    query.addBindValue(date);
 
     if (!query.exec())
     {
@@ -465,7 +465,7 @@ void Database::updateReview(QString reflection, QString summary)
     {
         query.prepare("INSERT INTO daily_review (review_date, reflection, summary) "
                       "VALUES (?, ?, ?)");
-        query.addBindValue(QDate::currentDate());
+        query.addBindValue(date);
         query.addBindValue(reflection);
         query.addBindValue(summary);
 

@@ -78,11 +78,11 @@ int Utils::planStatusFromString(const QString &str)
 const QMap<QString, QColor>& Utils::statusColorMap()
 {
     static const QMap<QString, QColor> map = {
-        {"进行中", QColor(0, 122, 204)},
-        {"已完成", QColor(50, 205, 50)},
-        {"未完成", QColor(255, 87, 34)},
-        {"超时完成", QColor(255, 165, 0)},
-        {"已取消", QColor(128, 128, 128)}
+        {"进行中", Qt::cyan},
+        {"已完成", Qt::green},
+        {"未完成", Qt::red},
+        {"超时完成", Qt::yellow},
+        {"已取消", Qt::gray}
     };
     return map;
 }
