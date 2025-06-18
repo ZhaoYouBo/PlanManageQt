@@ -291,7 +291,27 @@ void Database::updateTaskStatus(int id, int status)
         break;
     }
     query.addBindValue(id);
+
     if (!query.exec()) {
+        return;
+    }
+
+    QSqlQuery planQuery;
+    if (status == 1 || status == 3) {
+        planQuery.prepare("UPDATE daily_plan "
+                          "SET status = 1 "
+                          "WHERE plan_date = ? AND task_id = ?");
+        planQuery.addBindValue(QDate::currentDate());
+        planQuery.addBindValue(id);
+    } else if (status == 2 || status == 4) {
+        planQuery.prepare("UPDATE daily_plan "
+                          "SET status = 2 "
+                          "WHERE plan_date = ? AND task_id = ?");
+        planQuery.addBindValue(QDate::currentDate());
+        planQuery.addBindValue(id);
+    }
+
+    if (!planQuery.exec()) {
     }
 }
 

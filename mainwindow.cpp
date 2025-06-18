@@ -216,6 +216,7 @@ void MainWindow::saveData()
     QString summary = ui->textEdit_summary->toPlainText();
 
     m_dbManager.updateReview(reflection, summary, selectedDate);
+    on_calendarWidget_clicked(ui->calendarWidget->selectedDate());
 }
 
 void MainWindow::adjustTableWidth(QTableView *tableView)
@@ -318,6 +319,7 @@ void MainWindow::onTableViewTaskDataChanged(const QModelIndex &topLeft, const QM
         break;
     }
     on_comboBox_task_currentIndexChanged(ui->comboBox_task->currentIndex());
+    on_calendarWidget_clicked(ui->calendarWidget->selectedDate());
 }
 
 void MainWindow::onTableViewHabitDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
