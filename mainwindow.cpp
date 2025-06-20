@@ -559,7 +559,7 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
     }
 
     QList<HabitData> habitDataList;
-    habitDataList = m_dbManager.getHabitByStatus(0);
+    habitDataList = m_dbManager.getHabitByStatus(1);
 
     for (const HabitData &habit : habitDataList)
     {
