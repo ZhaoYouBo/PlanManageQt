@@ -46,7 +46,7 @@ QStringList Utils::habitStatusList()
 
 QStringList Utils::habitFrequencyList()
 {
-    return {"每日一次", "每二日一次", "每三日一次", "每周周五", "每周周六"};
+    return {"每日一次", "每二日一次", "每三日一次", "每周周一", "每周周二", "每周周三", "每周周四", "每周周五", "每周周六", "每周周日", "每周工作日", "每周休息日"};
 }
 
 QStringList Utils::planStatusList()

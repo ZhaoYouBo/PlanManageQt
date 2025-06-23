@@ -586,6 +586,26 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
             if (daysDiff % 3 == 0)
                 shouldAdd = true;
         }
+        else if (frequency.startsWith("每周周一"))
+        {
+            if (date.dayOfWeek() == 1)
+                shouldAdd = true;
+        }
+        else if (frequency.startsWith("每周周二"))
+        {
+            if (date.dayOfWeek() == 2)
+                shouldAdd = true;
+        }
+        else if (frequency.startsWith("每周周三"))
+        {
+            if (date.dayOfWeek() == 3)
+                shouldAdd = true;
+        }
+        else if (frequency.startsWith("每周周四"))
+        {
+            if (date.dayOfWeek() == 4)
+                shouldAdd = true;
+        }
         else if (frequency.startsWith("每周周五"))
         {
             if (date.dayOfWeek() == 5)
@@ -594,6 +614,21 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
         else if (frequency.startsWith("每周周六"))
         {
             if (date.dayOfWeek() == 6)
+                shouldAdd = true;
+        }
+        else if (frequency.startsWith("每周周日"))
+        {
+            if (date.dayOfWeek() == 7)
+                shouldAdd = true;
+        }
+        else if (frequency.startsWith("每周工作日"))
+        {
+            if (date.dayOfWeek() >= 1 && date.dayOfWeek() <= 5)
+                shouldAdd = true;
+        }
+        else if (frequency.startsWith("每周休息日"))
+        {
+            if (date.dayOfWeek() == 6 || date.dayOfWeek() == 7)
                 shouldAdd = true;
         }
 
