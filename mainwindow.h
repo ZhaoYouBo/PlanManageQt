@@ -68,15 +68,12 @@ private slots:
 
 private:
     Ui::MainWindow *ui;
-    Database m_dbManager; // Database manager
-    TaskModel* m_modelTask; // Table model
+    Database m_dbManager;
+    TaskModel* m_modelTask;
     HabitModel* m_modelHabit;
     PlanModel* m_modelPlan;
     QChartView *m_chartViewPlan;
     void init();
-    /**
-     * @brief Initialize chart
-     */
     void initChart();
     void saveData();
     void adjustTableWidth(QTableView *tableView);

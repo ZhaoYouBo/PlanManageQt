@@ -3,8 +3,8 @@
 #include <QSqlQuery>
 
 Database::Database(const QString &dbName) {
-    m_db = QSqlDatabase::addDatabase("QSQLITE"); // Add database
-    m_db.setDatabaseName(dbName); // Set database name
+    m_db = QSqlDatabase::addDatabase("QSQLITE");
+    m_db.setDatabaseName(dbName);
     if (!m_db.open()) {
         qDebug() << "Error: " << m_db.lastError().text();
     } else {
@@ -18,7 +18,6 @@ void Database::createTables()
 {
     QSqlQuery query;
 
-    // Task table
     query.exec(
         "CREATE TABLE IF NOT EXISTS task ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -30,7 +29,6 @@ void Database::createTables()
         ")"
     );
 
-    // Habit table
     query.exec(
         "CREATE TABLE IF NOT EXISTS habits ("
         "id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "
@@ -40,7 +38,6 @@ void Database::createTables()
         "status INTEGER DEFAULT 0); "
     );
 
-    // Daily plan table
     query.exec(
         "CREATE TABLE IF NOT EXISTS daily_plan ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
@@ -56,7 +53,6 @@ void Database::createTables()
         ")"
     );
 
-    //  Daily review table
     query.exec(
         "CREATE TABLE IF NOT EXISTS daily_review ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "

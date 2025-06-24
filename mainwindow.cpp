@@ -19,13 +19,13 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
-    , m_dbManager("D:/Collection/Sqlite/PlanManage.db") // Initialize the database manager
+    , m_dbManager("D:/Collection/Sqlite/PlanManage.db")
 {
     ui->setupUi(this);
 
-    this->showMaximized(); // Show the window maximized
+    this->showMaximized();
 
-    this->setWindowTitle("计划管理软件"); // Set window title
+    this->setWindowTitle("计划管理软件");
 
     QFile file(QCoreApplication::applicationDirPath() + "/resource/Ubuntu.qss");
     file.open(QFile::ReadOnly);
@@ -42,7 +42,6 @@ MainWindow::~MainWindow()
 
 void MainWindow::init()
 {
-    // Create a model for the table view
     m_modelTask = new TaskModel(this);
     m_modelHabit = new HabitModel(this);
     m_modelPlan = new PlanModel(this);
@@ -51,20 +50,15 @@ void MainWindow::init()
     m_modelHabit->setHorizontalHeaderLabels({"ID", "习惯名称", "创建日期", "习惯频率", "完成状态"});
     m_modelPlan->setHorizontalHeaderLabels({"类型", "计划名称", "完成状态"});
 
-    // Set the model to the table view
     ui->tableView_task->setModel(m_modelTask);
     ui->tableView_habit->setModel(m_modelHabit);
     ui->tableView_plan->setModel(m_modelPlan);
 
-    ui->tableView_task->verticalHeader()->setVisible(false);
-    ui->tableView_habit->verticalHeader()->setVisible(false);
 
-    // Enable word wrap
     ui->tableView_task->setWordWrap(true);
     ui->tableView_habit->setWordWrap(true);
     ui->tableView_plan->setWordWrap(true);
 
-    // Adjust row height based on content
     ui->tableView_task->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView_habit->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView_plan->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
@@ -77,7 +71,6 @@ void MainWindow::init()
     PlanNameDelegate *planNameDelegate = new PlanNameDelegate(&m_dbManager, ui->tableView_plan, this);
     ui->tableView_plan->setItemDelegateForColumn(1, planNameDelegate);
     ui->tableView_plan->setItemDelegateForColumn(2, new PlanStatusDelegate(ui->tableView_plan));
-
 
     connect(m_modelTask, &TaskModel::dataChanged, this, &MainWindow::onTableViewTaskDataChanged);
     connect(m_modelHabit, &HabitModel::dataChanged, this, &MainWindow::onTableViewHabitDataChanged);
@@ -93,7 +86,6 @@ void MainWindow::init()
 
     ui->calendarWidget->clicked(QDate::currentDate());
 
-    // Antomatically adjust table width
     adjustTableWidth(ui->tableView_plan);
     adjustTableWidth(ui->tableView_task);
     adjustTableWidth(ui->tableView_habit);
@@ -101,6 +93,9 @@ void MainWindow::init()
     ui->tableView_plan->viewport()->installEventFilter(this);
     ui->tableView_task->viewport()->installEventFilter(this);
     ui->tableView_habit->viewport()->installEventFilter(this);
+
+    ui->tableView_habit->setColumnHidden(0, true);
+    ui->tableView_task->setColumnHidden(0, true);
 }
 
 void MainWindow::initChart()
@@ -131,7 +126,6 @@ void MainWindow::initChart()
 
         QDateTime startDateTime(startDate, QTime(0, 0, 0));
         QDateTime endDateTime(endDate, QTime(0, 0, 0));
-        // axisX->setLabelsAngle(-90);
         axisX->setRange(startDateTime, endDateTime);
 
         QValueAxis *axisY = new QValueAxis();
@@ -302,7 +296,7 @@ void MainWindow::onTableViewTaskDataChanged(const QModelIndex &topLeft, const QM
         return;
     }
 
-    QVariant newValue = model->data(topLeft, Qt::EditRole); // Get the new value from the model
+    QVariant newValue = model->data(topLeft, Qt::EditRole);
 
     switch (col) {
     case 1:
@@ -341,7 +335,7 @@ void MainWindow::onTableViewHabitDataChanged(const QModelIndex &topLeft, const Q
         return;
     }
 
-    QVariant newValue = model->data(topLeft, Qt::EditRole); // Get the new value from the model
+    QVariant newValue = model->data(topLeft, Qt::EditRole);
 
     switch (col) {
     case 1:
@@ -475,9 +469,8 @@ void MainWindow::on_comboBox_habit_currentIndexChanged(int index)
 
 void MainWindow::on_calendarWidget_clicked(const QDate &date)
 {
-    // Update the chart
     QChart *chart = m_chartViewPlan->chart();
-    chart->removeAllSeries(); // Clear existing series
+    chart->removeAllSeries();
 
     QDate startDate = date.addDays(-15);
     QMap<QDate, double> resultDate = m_dbManager.getPlanNumberByDate(startDate, date);
@@ -563,7 +556,6 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
 
     for (const HabitData &habit : habitDataList)
     {
-        // Skip habits created after the selected date
         if (habit.createdDate > date)
             continue;
 
