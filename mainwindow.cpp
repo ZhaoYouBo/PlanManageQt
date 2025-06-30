@@ -15,6 +15,8 @@
 #include <QDateTimeAxis>
 #include <QValueAxis>
 #include <QDateTime>
+#include <QCoreApplication>
+#include <QHeaderView>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -106,7 +108,7 @@ void MainWindow::initChart()
     QChart *chart = new QChart();
     chart->setTitle("任务完成情况");
 
-    QDate startDate = QDate::currentDate().addDays(-15);
+    QDate startDate = QDate::currentDate().addDays(-13);
     QDate endDate = QDate::currentDate();
     QMap<QDate,double> resultDate = m_dbManager.getPlanNumberByDate(startDate, endDate);
 
@@ -116,8 +118,12 @@ void MainWindow::initChart()
 
         for (auto it = resultDate.begin(); it != resultDate.end(); ++it) {
             QDateTime dateTime(it.key(), QTime(0, 0, 0));
-            series->append(dateTime.toMSecsSinceEpoch(), it.value());
+            series->append(dateTime.toMSecsSinceEpoch(), qRound(it.value() * 100));
         }
+
+        series->setPointsVisible(true);
+        series->setPointLabelsVisible(true);
+        series->setPointLabelsFormat("@yPoint%");
 
         QDateTimeAxis *axisX = new QDateTimeAxis();
         axisX->setFormat("MM-dd");
@@ -126,13 +132,15 @@ void MainWindow::initChart()
 
         QDateTime startDateTime(startDate, QTime(0, 0, 0));
         QDateTime endDateTime(endDate, QTime(0, 0, 0));
-        axisX->setRange(startDateTime, endDateTime);
+        QDateTime startDateTimeWithMargin = startDateTime.addDays(-1);
+        QDateTime endDateTimeWithMargin = endDateTime.addDays(1);
+        axisX->setRange(startDateTimeWithMargin, endDateTimeWithMargin);
 
         QValueAxis *axisY = new QValueAxis();
-        axisY->setLabelFormat("%.2f");
+        axisY->setLabelFormat("%.0f%");
         axisY->setTitleText("完成率");
         axisY->setTickCount(6);
-        axisY->setRange(0.0, 1.0);
+        axisY->setRange(0, 100);
 
         chart->addSeries(series);
         chart->addAxis(axisX, Qt::AlignBottom);
@@ -472,7 +480,7 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
     QChart *chart = m_chartViewPlan->chart();
     chart->removeAllSeries();
 
-    QDate startDate = date.addDays(-15);
+    QDate startDate = date.addDays(-13);
     QMap<QDate, double> resultDate = m_dbManager.getPlanNumberByDate(startDate, date);
 
     QDateTimeAxis *axisX = nullptr;
@@ -497,20 +505,25 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
     axisX->setFormat("MM-dd");
     axisX->setTitleText("日期");
     axisX->setTickCount(16);
-    axisX->setRange(QDateTime(date.addDays(-15), QTime(0,0,0)), QDateTime(date, QTime(0,0,0)));
+    axisX->setRange(QDateTime(date.addDays(-14), QTime(0,0,0)), QDateTime(date.addDays(1), QTime(0,0,0)));
 
-    axisY->setLabelFormat("%.2f");
+    axisY->setLabelFormat("%.0f%");
     axisY->setTitleText("完成率");
     axisY->setTickCount(6);
-    axisY->setRange(0.0, 1.0);
+    axisY->setRange(0, 100);
 
     chart->removeAllSeries();
 
     if (!resultDate.empty()) {
         QLineSeries *series = new QLineSeries();
         for (auto it = resultDate.begin(); it != resultDate.end(); ++it) {
-            series->append(QDateTime(it.key(), QTime(0,0,0)).toMSecsSinceEpoch(), it.value());
+            series->append(QDateTime(it.key(), QTime(0,0,0)).toMSecsSinceEpoch(), qRound(it.value() * 100));
         }
+        
+        series->setPointsVisible(true);
+        series->setPointLabelsVisible(true);
+        series->setPointLabelsFormat("@yPoint%");
+        
         chart->addSeries(series);
         series->attachAxis(axisX);
         series->attachAxis(axisY);
