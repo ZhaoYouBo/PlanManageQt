@@ -5,6 +5,7 @@
 #include <QStandardItemModel>
 #include <QTableView>
 #include <QChartView>
+#include <QToolTip>
 #include "database.h"
 
 QT_BEGIN_NAMESPACE
@@ -66,6 +67,9 @@ private slots:
 
     void on_pushButton_insert_clicked();
 
+private slots:
+    void onChartHovered(const QPointF &point, bool state);
+
 private:
     Ui::MainWindow *ui;
     Database m_dbManager;
@@ -73,6 +77,7 @@ private:
     HabitModel* m_modelHabit;
     PlanModel* m_modelPlan;
     QChartView *m_chartViewPlan;
+    QToolTip *m_tooltip;
     void init();
     void initChart();
     void saveData();

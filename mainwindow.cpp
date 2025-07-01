@@ -17,11 +17,17 @@
 #include <QDateTime>
 #include <QCoreApplication>
 #include <QHeaderView>
+#include <QToolTip>
+#include <QGraphicsScene>
+#include <QGraphicsView>
+#include <QtMath>
+#include <limits>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
     , m_dbManager("D:/Collection/Sqlite/PlanManage.db")
+    , m_tooltip(nullptr)
 {
     ui->setupUi(this);
 
@@ -122,8 +128,10 @@ void MainWindow::initChart()
         }
 
         series->setPointsVisible(true);
-        series->setPointLabelsVisible(true);
-        series->setPointLabelsFormat("@yPoint%");
+        series->setPointLabelsVisible(false);
+        
+        // 连接悬停信号
+        connect(series, &QLineSeries::hovered, this, &MainWindow::onChartHovered);
 
         QDateTimeAxis *axisX = new QDateTimeAxis();
         axisX->setFormat("MM-dd");
@@ -521,8 +529,10 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
         }
         
         series->setPointsVisible(true);
-        series->setPointLabelsVisible(true);
-        series->setPointLabelsFormat("@yPoint%");
+        series->setPointLabelsVisible(false);
+        
+        // 连接悬停信号
+        connect(series, &QLineSeries::hovered, this, &MainWindow::onChartHovered);
         
         chart->addSeries(series);
         series->attachAxis(axisX);
@@ -725,5 +735,58 @@ void MainWindow::on_pushButton_insert_clicked()
     items.append(new QStandardItem("进行中"));
 
     model->appendRow(items);
+}
+
+void MainWindow::onChartHovered(const QPointF &point, bool state)
+{
+    if (state) {
+        // 获取当前图表的数据范围
+        QChart *chart = m_chartViewPlan->chart();
+        if (!chart || chart->series().isEmpty()) {
+            return;
+        }
+        
+        QLineSeries *series = qobject_cast<QLineSeries*>(chart->series().first());
+        if (!series) {
+            return;
+        }
+        
+        // 找到最近的数据点
+        QPointF closestPoint;
+        double minDistance = std::numeric_limits<double>::max();
+        bool foundClosest = false;
+        
+        for (int i = 0; i < series->count(); ++i) {
+            QPointF dataPoint = series->at(i);
+            double distance = qSqrt(qPow(point.x() - dataPoint.x(), 2) + qPow(point.y() - dataPoint.y(), 2));
+            
+            // 设置一个合理的阈值，只有当鼠标足够接近数据点时才显示工具提示
+            if (distance < 0.5 * 24 * 60 * 60 * 1000) { // 半天的毫秒数作为阈值
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    closestPoint = dataPoint;
+                    foundClosest = true;
+                }
+            }
+        }
+        
+        // 只有在找到最近的数据点且距离足够近时才显示工具提示
+        if (foundClosest) {
+            QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(closestPoint.x());
+            QString dateStr = dateTime.toString("yyyy年MM月dd日");
+            QString completionRate = QString::number(closestPoint.y(), 'f', 1) + "%";
+            
+            QString tooltipText = QString("日期: %1\n完成率: %2").arg(dateStr, completionRate);
+            
+            // 获取鼠标位置并显示工具提示
+            QPoint globalPos = m_chartViewPlan->mapToGlobal(m_chartViewPlan->mapFromScene(
+                m_chartViewPlan->chart()->mapToPosition(closestPoint)));
+            
+            QToolTip::showText(globalPos, tooltipText, m_chartViewPlan);
+        }
+    } else {
+        // 鼠标离开数据点，隐藏工具提示
+        QToolTip::hideText();
+    }
 }
 
