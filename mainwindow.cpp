@@ -22,6 +22,10 @@
 #include <QGraphicsView>
 #include <QtMath>
 #include <limits>
+#include <QActionGroup>
+#include <QDir>
+#include <QFileInfoList>
+#include <QSettings>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -34,13 +38,30 @@ MainWindow::MainWindow(QWidget *parent)
     this->showMaximized();
 
     this->setWindowTitle("计划管理软件");
-
-    QFile file(QCoreApplication::applicationDirPath() + "/resource/Ubuntu.qss");
-    file.open(QFile::ReadOnly);
-    this->setStyleSheet(file.readAll());
-
+    this->setWindowIcon(QIcon(":/assets/resource/icon.ico"));
     initChart();
     init();
+    createThemeMenu();
+    QSettings settings("config.ini", QSettings::IniFormat);
+    QString lastTheme = settings.value("theme").toString();
+    bool found = false;
+    if (!lastTheme.isEmpty()) {
+        changeTheme(lastTheme);
+
+        QList<QAction*> actions = themeGroup->actions();
+        for (QAction* action : actions) {
+            if (action->text() == lastTheme) {
+                action->setChecked(true);
+                found = true;
+                break;
+            }
+        }
+    }
+
+    if (!found && !themeGroup->actions().isEmpty()) {
+        themeGroup->actions().first()->setChecked(true);
+        changeTheme(themeGroup->actions().first()->text());
+    }
 }
 
 MainWindow::~MainWindow()
@@ -130,7 +151,6 @@ void MainWindow::initChart()
         series->setPointsVisible(true);
         series->setPointLabelsVisible(false);
         
-        // 连接悬停信号
         connect(series, &QLineSeries::hovered, this, &MainWindow::onChartHovered);
 
         QDateTimeAxis *axisX = new QDateTimeAxis();
@@ -166,6 +186,44 @@ void MainWindow::initChart()
     m_chartViewPlan->setChart(chart);
 
     ui->horizontalLayout->insertWidget(1, m_chartViewPlan);
+}
+
+
+void MainWindow::createThemeMenu()
+{
+    QMenu *themeMenu = menuBar()->addMenu(tr("主题"));
+
+    themeGroup = new QActionGroup(this);
+
+    QDir qssDir(":/assets/resource/");
+    QStringList nameFilters;
+    nameFilters << "*.qss";
+    QFileInfoList qssFiles = qssDir.entryInfoList(nameFilters, QDir::Files);
+
+    for (const QFileInfo &fileInfo : qssFiles) {
+        QString theme = fileInfo.baseName();
+        QAction *action = new QAction(theme, this);
+        action->setCheckable(true);
+        themeGroup->addAction(action);
+        themeMenu->addAction(action);
+        connect(action, &QAction::triggered, this, [this, theme]() {
+            this->changeTheme(theme);
+        });
+    }
+}
+
+
+void MainWindow::changeTheme(const QString &themeName)
+{
+    QString qssPath = QString(":/assets/resource/%1.qss").arg(themeName);
+    QFile file(qssPath);
+    if (file.open(QFile::ReadOnly)) {
+        QString styleSheet = QLatin1String(file.readAll());
+        qApp->setStyleSheet(styleSheet);
+
+        QSettings settings("config.ini", QSettings::IniFormat);
+        settings.setValue("theme", themeName);
+    }
 }
 
 

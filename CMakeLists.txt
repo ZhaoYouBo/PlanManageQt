@@ -5,6 +5,8 @@ find_package(Qt6 6.5 REQUIRED COMPONENTS Core Widgets Sql Charts)
 
 qt_standard_project_setup()
 
+set(CMAKE_AUTORCC ON)
+
 qt_add_executable(PlanManageQt
     WIN32 MACOSX_BUNDLE
     main.cpp
@@ -12,7 +14,6 @@ qt_add_executable(PlanManageQt
     mainwindow.h
     mainwindow.ui
     database.h database.cpp
-    resource.rc
     addtaskdialog.h addtaskdialog.cpp addtaskdialog.ui
     datedelegate.h datedelegate.cpp
     taskstatusdelegate.h taskstatusdelegate.cpp
@@ -22,6 +23,7 @@ qt_add_executable(PlanManageQt
     habitfrequencydelegate.h habitfrequencydelegate.cpp
     planstatusdelegate.h planstatusdelegate.cpp
     plannamedelegate.h plannamedelegate.cpp
+    resources.qrc
 )
 
 target_link_libraries(PlanManageQt

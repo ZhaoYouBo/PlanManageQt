@@ -78,9 +78,12 @@ private:
     PlanModel* m_modelPlan;
     QChartView *m_chartViewPlan;
     QToolTip *m_tooltip;
+    QActionGroup *themeGroup; // 主题分组，便于同步菜单选中项
     void init();
     void initChart();
     void saveData();
     void adjustTableWidth(QTableView *tableView);
+    void createThemeMenu();
+    void changeTheme(const QString &themeName);
 };
 #endif // MAINWINDOW_H

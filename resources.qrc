@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/assets">
+        <file>resource/Aqua.qss</file>
+        <file>resource/MacOS.qss</file>
+        <file>resource/Ubuntu.qss</file>
+        <file>resource/icon.ico</file>
+        <file>resource/Diffnes.qss</file>
+    </qresource>
+</RCC>
