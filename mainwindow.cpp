@@ -715,6 +715,8 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
 
             m_modelPlan->appendRow(items);
         }
+
+        m_dbManager.updateHabitStatusByTimes(habit);
     }
 }
 

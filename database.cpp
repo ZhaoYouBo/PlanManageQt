@@ -490,3 +490,219 @@ void Database::updateReview(QString reflection, QString summary, QDate date)
         }
     }
 }
+
+void Database::updateHabitStatusByTimes(const HabitData &habit)
+{
+    QSqlQuery planQuery;
+    QSqlQuery habitQuery;
+    bool shouldComplete = false;
+    if (habit.target_frequency == "每日一次")
+    {
+        planQuery.prepare("SELECT plan_date "
+                          "FROM daily_plan "
+                          "WHERE plan_name = ? and status = 1 "
+                          "ORDER BY plan_date ASC");
+        planQuery.addBindValue(habit.name);
+        if (planQuery.exec()) {
+            QDate lastDate;
+            int maxStreak = 0;
+            int currentStreak = 0;
+            while (planQuery.next()) {
+                QDate date = planQuery.value(0).toDate();
+                if (lastDate.isValid() && lastDate.addDays(1) == date) {
+                    currentStreak++;
+                } else {
+                    currentStreak = 1;
+                }
+                if (currentStreak > maxStreak) {
+                    maxStreak = currentStreak;
+                }
+                lastDate = date;
+            }
+            qDebug() << "习惯:" << habit.name << "[每日一次] 最大连续打卡天数:" << maxStreak;
+            if (maxStreak >= 30) {
+                shouldComplete = true;
+            }
+        }
+    }
+    else if (habit.target_frequency.startsWith("每二日一次"))
+    {
+        planQuery.prepare("SELECT plan_date "
+                          "FROM daily_plan "
+                          "WHERE plan_name = ? AND status = 1 "
+                          "ORDER BY plan_date ASC");
+        planQuery.addBindValue(habit.name);
+        if (planQuery.exec()) {
+            QDate lastDate;
+            int maxStreak = 0;
+            int currentStreak = 0;
+            while (planQuery.next()) {
+                QDate date = planQuery.value(0).toDate();
+                if (lastDate.isValid() && lastDate.addDays(2) == date) {
+                    currentStreak++;
+                } else {
+                    currentStreak = 1;
+                }
+                if (currentStreak > maxStreak) {
+                    maxStreak = currentStreak;
+                }
+                lastDate = date;
+            }
+            qDebug() << "习惯:" << habit.name << "[每二日一次] 最大连续打卡次数:" << maxStreak;
+            if (maxStreak >= 30) {
+                shouldComplete = true;
+            }
+        }
+    }
+    else if (habit.target_frequency.startsWith("每三日一次"))
+    {
+        planQuery.prepare("SELECT plan_date "
+                          "FROM daily_plan "
+                          "WHERE plan_name = ? AND status = 1 "
+                          "ORDER BY plan_date ASC");
+        planQuery.addBindValue(habit.name);
+        if (planQuery.exec()) {
+            QDate lastDate;
+            int maxStreak = 0;
+            int currentStreak = 0;
+            while (planQuery.next()) {
+                QDate date = planQuery.value(0).toDate();
+                if (lastDate.isValid() && lastDate.addDays(3) == date) {
+                    currentStreak++;
+                } else {
+                    currentStreak = 1;
+                }
+                if (currentStreak > maxStreak) {
+                    maxStreak = currentStreak;
+                }
+                lastDate = date;
+            }
+            qDebug() << "习惯:" << habit.name << "[每三日一次] 最大连续打卡次数:" << maxStreak;
+            if (maxStreak >= 30) {
+                shouldComplete = true;
+            }
+        }
+
+    }
+    else if (habit.target_frequency.startsWith("每周周"))
+    {
+        QString weekDayStr = habit.target_frequency.mid(2, 2);
+        int targetDayOfWeek = 1;
+        if (weekDayStr == "周一") targetDayOfWeek = 1;
+        else if (weekDayStr == "周二") targetDayOfWeek = 2;
+        else if (weekDayStr == "周三") targetDayOfWeek = 3;
+        else if (weekDayStr == "周四") targetDayOfWeek = 4;
+        else if (weekDayStr == "周五") targetDayOfWeek = 5;
+        else if (weekDayStr == "周六") targetDayOfWeek = 6;
+        else if (weekDayStr == "周日") targetDayOfWeek = 7;
+
+        planQuery.prepare("SELECT plan_date "
+                          "FROM daily_plan "
+                          "WHERE plan_name = ? AND status = 1 "
+                          "ORDER BY plan_date ASC");
+        planQuery.addBindValue(habit.name);
+        if (planQuery.exec()) {
+            QDate lastDate;
+            int maxStreak = 0;
+            int currentStreak = 0;
+            while (planQuery.next()) {
+                QDate date = planQuery.value(0).toDate();
+                if (date.dayOfWeek() != targetDayOfWeek) continue;
+                if (lastDate.isValid() && lastDate.addDays(7) == date) {
+                    currentStreak++;
+                } else {
+                    currentStreak = 1;
+                }
+                if (currentStreak > maxStreak) {
+                    maxStreak = currentStreak;
+                }
+                lastDate = date;
+            }
+            qDebug() << "习惯:" << habit.name << "[每周" << weekDayStr << "] 最大连续打卡周数:" << maxStreak;
+            if (maxStreak >= 30) {
+                shouldComplete = true;
+            }
+        }
+    }
+    else if (habit.target_frequency.startsWith("每周工作日"))
+    {
+        planQuery.prepare("SELECT plan_date "
+                          "FROM daily_plan "
+                          "WHERE plan_name = ? AND status = 1 "
+                          "ORDER BY plan_date ASC");
+        planQuery.addBindValue(habit.name);
+        if (planQuery.exec()) {
+            QDate lastDate;
+            int lastDayOfWeek = 0;
+            int maxStreak = 0;
+            int currentStreak = 0;
+            while (planQuery.next()) {
+                QDate date = planQuery.value(0).toDate();
+                int dayOfWeek = date.dayOfWeek();
+                if (dayOfWeek >= 1 && dayOfWeek <= 5) {
+                    if (lastDate.isValid()) {
+                        int daysDiff = lastDate.daysTo(date);
+                        if ((lastDate.dayOfWeek() == 5 && dayOfWeek == 1 && daysDiff == 3) ||
+                            (lastDate.dayOfWeek() != 5 && daysDiff == 1)) {
+                            currentStreak++;
+                        } else {
+                            currentStreak = 1;
+                        }
+                    } else {
+                        currentStreak = 1;
+                    }
+                    if (currentStreak > maxStreak) {
+                        maxStreak = currentStreak;
+                    }
+                    lastDate = date;
+                }
+            }
+            qDebug() << "习惯:" << habit.name << "[每周工作日] 最大连续打卡天数:" << maxStreak;
+            if (maxStreak >= 30) {
+                shouldComplete = true;
+            }
+        }
+    }
+    else if (habit.target_frequency.startsWith("每周休息日"))
+    {
+        planQuery.prepare("SELECT plan_date "
+                          "FROM daily_plan "
+                          "WHERE plan_name = ? AND status = 1 "
+                          "ORDER BY plan_date ASC");
+        planQuery.addBindValue(habit.name);
+        if (planQuery.exec()) {
+            QDate lastDate;
+            int maxStreak = 0;
+            int currentStreak = 0;
+            while (planQuery.next()) {
+                QDate date = planQuery.value(0).toDate();
+                int dayOfWeek = date.dayOfWeek();
+                if (lastDate.isValid()) {
+                    if ((dayOfWeek == 7 && lastDate.addDays(1) == date) ||
+                        (dayOfWeek == 6 && lastDate.addDays(6) == date)) {
+                        currentStreak++;
+                    } else {
+                        currentStreak = 1;
+                    }
+                    if (currentStreak > maxStreak) {
+                        maxStreak = currentStreak;
+                    }
+                    lastDate = date;
+                }
+            }
+            qDebug() << "习惯:" << habit.name << "[每周休息日] 最大连续打卡天数:" << maxStreak;
+            if (maxStreak >= 30) {
+                shouldComplete = true;
+            }
+        }
+    }
+
+    if (shouldComplete)
+    {
+        habitQuery.prepare("UPDATE habits "
+                           "SET status = 1 "
+                           "WHERE name = ? and status = 0");
+        habitQuery.addBindValue(habit.name);
+        habitQuery.exec();
+    }
+}
