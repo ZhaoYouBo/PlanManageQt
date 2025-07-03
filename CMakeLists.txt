@@ -24,6 +24,7 @@ qt_add_executable(PlanManageQt
     planstatusdelegate.h planstatusdelegate.cpp
     plannamedelegate.h plannamedelegate.cpp
     resources.qrc
+    photosurface.rc
 )
 
 target_link_libraries(PlanManageQt

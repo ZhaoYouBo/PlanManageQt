@@ -195,7 +195,7 @@ void MainWindow::createThemeMenu()
 
     themeGroup = new QActionGroup(this);
 
-    QDir qssDir(":/assets/resource/");
+    QDir qssDir(":/assets/resources/");
     QStringList nameFilters;
     nameFilters << "*.qss";
     QFileInfoList qssFiles = qssDir.entryInfoList(nameFilters, QDir::Files);
@@ -215,7 +215,7 @@ void MainWindow::createThemeMenu()
 
 void MainWindow::changeTheme(const QString &themeName)
 {
-    QString qssPath = QString(":/assets/resource/%1.qss").arg(themeName);
+    QString qssPath = QString(":/assets/resources/%1.qss").arg(themeName);
     QFile file(qssPath);
     if (file.open(QFile::ReadOnly)) {
         QString styleSheet = QLatin1String(file.readAll());
