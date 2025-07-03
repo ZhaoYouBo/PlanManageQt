@@ -1,13 +1,6 @@
 <RCC>
     <qresource prefix="/assets">
-        <file>resources/Aqua.qss</file>
         <file>resources/icon.ico</file>
-        <file>resources/MacOS.qss</file>
-        <file>resources/Ubuntu.qss</file>
-        <file>resources/AMOLED.qss</file>
-        <file>resources/ConsoleStyle.qss</file>
-        <file>resources/ElegantDark.qss</file>
-        <file>resources/ManjaroMix.qss</file>
-        <file>resources/MaterialDark.qss</file>
+        <file>resources/DarkPurple.qss</file>
     </qresource>
 </RCC>
