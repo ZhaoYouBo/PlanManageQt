@@ -42,7 +42,7 @@ public:
     QList<HabitData> getHabitByStatus(int status);
     QList<PlanData> getPlanByDate(const QDate& date);
     QMap<QDate,double> getPlanNumberByDate(const QDate& startDate, const QDate& endDate);
-    ReviewData getReviewByDate(const QDate& date);
+    ReviewData getReviewByDate(const QString& type, const QDate& startDate, const QDate& endDate);
     void addTask(TaskData data);
     void addHabit(HabitData data);
     void updateTaskName(int id, const QString& name);
@@ -56,7 +56,7 @@ public:
     int getTaskIdByName(QString name);
     void updateHabitPlan(int index, QString name, int status, int habitId, QDate date);
     void updateTaskPlan(int index, QString name, int status, int taskId, QDate date);
-    void updateReview(QString reflection, QString summary, QDate date);
+    void updateReview(const QString& reflection, const QString& summary, const QDate& date, const QString& type);
     void updateHabitStatusByTimes(const HabitData &habit);
 
 private:

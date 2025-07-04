@@ -59,8 +59,6 @@ private slots:
 
     void on_pushButton_savePlan_clicked();
 
-    void on_pushButton_saveReflection_clicked();
-
     void on_pushButton_saveSummary_clicked();
 
     void on_pushButton_delete_clicked();

@@ -125,6 +125,9 @@ void MainWindow::init()
 
     ui->tableView_habit->setColumnHidden(0, true);
     ui->tableView_task->setColumnHidden(0, true);
+
+    ui->dateEdit_period_start->setDate(QDate::currentDate());
+    ui->dateEdit_period_end->setDate(QDate::currentDate());
 }
 
 void MainWindow::initChart()
@@ -283,7 +286,9 @@ void MainWindow::saveData()
     QString reflection = ui->textEdit_reflection->toPlainText();
     QString summary = ui->textEdit_summary->toPlainText();
 
-    m_dbManager.updateReview(reflection, summary, selectedDate);
+    QString currentText = ui->comboBox_type->currentText();
+
+    m_dbManager.updateReview(reflection, summary, selectedDate, currentText);
     on_calendarWidget_clicked(ui->calendarWidget->selectedDate());
 }
 
@@ -622,8 +627,37 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
         m_modelPlan->appendRow(items);
     }
 
+    QString currentText = ui->comboBox_type->currentText();
+    ui->textEdit_reflection->clear();
+    ui->textEdit_summary->clear();
+    QDate startPeriodDate = date;
+    QDate endPeriodDate = date;
+
+    if (currentText == "周总结")
+    {
+        startPeriodDate = date.addDays(-date.dayOfWeek() + 1);
+        endPeriodDate = startPeriodDate.addDays(6);
+    }
+    else if (currentText == "月总结")
+    {
+        startPeriodDate = date.addDays(-date.day() + 1);
+        endPeriodDate = startPeriodDate.addMonths(1).addDays(-1);
+    }
+    else if (currentText == "年中总结")
+    {
+        startPeriodDate = QDate(date.year(), 1, 1);
+        endPeriodDate = QDate(date.year(), 6, 30);
+    }
+    else if (currentText == "年终总结")
+    {
+        startPeriodDate = QDate(date.year(), 1, 1);
+        endPeriodDate = QDate(date.year(), 12, 31);
+    }
+
+    ui->dateEdit_period_start->setDate(startPeriodDate);
+    ui->dateEdit_period_end->setDate(endPeriodDate);
     ReviewData reviewData;
-    reviewData = m_dbManager.getReviewByDate(date);
+    reviewData = m_dbManager.getReviewByDate(currentText, startPeriodDate, endPeriodDate);
     ui->textEdit_reflection->setText(reviewData.reflection);
     ui->textEdit_summary->setText(reviewData.summary);
 
@@ -743,12 +777,6 @@ void MainWindow::on_pushButton_savePlan_clicked()
 }
 
 
-void MainWindow::on_pushButton_saveReflection_clicked()
-{
-    saveData();
-}
-
-
 void MainWindow::on_pushButton_saveSummary_clicked()
 {
     saveData();
@@ -800,7 +828,6 @@ void MainWindow::on_pushButton_insert_clicked()
 void MainWindow::onChartHovered(const QPointF &point, bool state)
 {
     if (state) {
-        // 获取当前图表的数据范围
         QChart *chart = m_chartViewPlan->chart();
         if (!chart || chart->series().isEmpty()) {
             return;
@@ -811,7 +838,6 @@ void MainWindow::onChartHovered(const QPointF &point, bool state)
             return;
         }
         
-        // 找到最近的数据点
         QPointF closestPoint;
         double minDistance = std::numeric_limits<double>::max();
         bool foundClosest = false;
@@ -820,8 +846,7 @@ void MainWindow::onChartHovered(const QPointF &point, bool state)
             QPointF dataPoint = series->at(i);
             double distance = qSqrt(qPow(point.x() - dataPoint.x(), 2) + qPow(point.y() - dataPoint.y(), 2));
             
-            // 设置一个合理的阈值，只有当鼠标足够接近数据点时才显示工具提示
-            if (distance < 0.5 * 24 * 60 * 60 * 1000) { // 半天的毫秒数作为阈值
+            if (distance < 0.5 * 24 * 60 * 60 * 1000) {
                 if (distance < minDistance) {
                     minDistance = distance;
                     closestPoint = dataPoint;
@@ -830,7 +855,6 @@ void MainWindow::onChartHovered(const QPointF &point, bool state)
             }
         }
         
-        // 只有在找到最近的数据点且距离足够近时才显示工具提示
         if (foundClosest) {
             QDateTime dateTime = QDateTime::fromMSecsSinceEpoch(closestPoint.x());
             QString dateStr = dateTime.toString("yyyy年MM月dd日");
@@ -838,14 +862,12 @@ void MainWindow::onChartHovered(const QPointF &point, bool state)
             
             QString tooltipText = QString("日期: %1\n完成率: %2").arg(dateStr, completionRate);
             
-            // 获取鼠标位置并显示工具提示
             QPoint globalPos = m_chartViewPlan->mapToGlobal(m_chartViewPlan->mapFromScene(
                 m_chartViewPlan->chart()->mapToPosition(closestPoint)));
             
             QToolTip::showText(globalPos, tooltipText, m_chartViewPlan);
         }
     } else {
-        // 鼠标离开数据点，隐藏工具提示
         QToolTip::hideText();
     }
 }

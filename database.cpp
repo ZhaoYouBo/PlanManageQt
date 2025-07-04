@@ -56,7 +56,10 @@ void Database::createTables()
     query.exec(
         "CREATE TABLE IF NOT EXISTS daily_review ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
+        "type TEXT, "
         "review_date DATE NOT NULL UNIQUE, "
+        "period_start DATE, "
+        "period_end DATE, "
         "reflection TEXT, "
         "summary TEXT"
         ")"
@@ -197,14 +200,16 @@ QMap<QDate, double> Database::getPlanNumberByDate(const QDate &startDate, const 
     return resultData;
 }
 
-ReviewData Database::getReviewByDate(const QDate &date)
+ReviewData Database::getReviewByDate(const QString& type, const QDate& startDate, const QDate& endDate)
 {
     ReviewData reviewData;
 
     QSqlQuery query("SELECT reflection, summary "
                     "FROM daily_review "
-                    "WHERE review_date = ?;");
-    query.addBindValue(date);
+                    "WHERE type = ? and period_start = ? and period_end = ?;");
+    query.addBindValue(type);
+    query.addBindValue(startDate);
+    query.addBindValue(endDate);
 
     if (!query.exec() || !query.next()) {
         return reviewData;
@@ -462,16 +467,44 @@ void Database::updateTaskPlan(int index, QString name, int status, int taskId, Q
     }
 }
 
-void Database::updateReview(QString reflection, QString summary, QDate date)
+void Database::updateReview(const QString& reflection, const QString& summary, const QDate& date, const QString& type)
 {
+    QDate startPeriodDate = date;
+    QDate endPeriodDate = date;
+
+    if (type == "周总结")
+    {
+        startPeriodDate = date.addDays(-date.dayOfWeek() + 1);
+        endPeriodDate = startPeriodDate.addDays(6);
+    }
+    else if (type == "月总结")
+    {
+        startPeriodDate = date.addDays(-date.day() + 1);
+        endPeriodDate = startPeriodDate.addMonths(1).addDays(-1);
+    }
+    else if (type == "年中总结")
+    {
+        startPeriodDate = QDate(date.year(), 1, 1);
+        endPeriodDate = QDate(date.year(), 6, 30);
+    }
+    else if (type == "年终总结")
+    {
+        startPeriodDate = QDate(date.year(), 1, 1);
+        endPeriodDate = QDate(date.year(), 12, 31);
+    }
     QSqlQuery query;
     query.prepare("UPDATE daily_review "
-                  "SET reflection = ?, summary = ? "
-                  "WHERE review_date = ?");
+                  "SET reflection = ?, summary = ?,review_date = ?, type = ?, period_start = ?, period_end = ? "
+                  "WHERE type = ? and period_start = ? and period_end = ?");
     query.addBindValue(reflection);
     query.addBindValue(summary);
     query.addBindValue(date);
-
+    query.addBindValue(type);
+    query.addBindValue(startPeriodDate);
+    query.addBindValue(endPeriodDate);
+    query.addBindValue(type);
+    query.addBindValue(startPeriodDate);
+    query.addBindValue(endPeriodDate);
     if (!query.exec())
     {
         return;
@@ -479,11 +512,14 @@ void Database::updateReview(QString reflection, QString summary, QDate date)
 
     if (query.numRowsAffected() == 0)
     {
-        query.prepare("INSERT INTO daily_review (review_date, reflection, summary) "
-                      "VALUES (?, ?, ?)");
+        query.prepare("INSERT INTO daily_review (review_date, reflection, summary, type, period_start, period_end) "
+                      "VALUES (?, ?, ?, ?, ?, ?)");
         query.addBindValue(date);
         query.addBindValue(reflection);
         query.addBindValue(summary);
+        query.addBindValue(type);
+        query.addBindValue(startPeriodDate);
+        query.addBindValue(endPeriodDate);
 
         if (!query.exec())
         {
