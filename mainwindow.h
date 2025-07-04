@@ -68,6 +68,8 @@ private slots:
 private slots:
     void onChartHovered(const QPointF &point, bool state);
 
+    void on_comboBox_type_currentTextChanged(const QString &arg1);
+
 private:
     Ui::MainWindow *ui;
     Database m_dbManager;

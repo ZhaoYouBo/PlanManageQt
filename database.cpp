@@ -57,7 +57,7 @@ void Database::createTables()
         "CREATE TABLE IF NOT EXISTS daily_review ("
         "id INTEGER PRIMARY KEY AUTOINCREMENT, "
         "type TEXT, "
-        "review_date DATE NOT NULL UNIQUE, "
+        "review_date DATE NOT NULL, "
         "period_start DATE, "
         "period_end DATE, "
         "reflection TEXT, "
@@ -494,7 +494,7 @@ void Database::updateReview(const QString& reflection, const QString& summary, c
     }
     QSqlQuery query;
     query.prepare("UPDATE daily_review "
-                  "SET reflection = ?, summary = ?,review_date = ?, type = ?, period_start = ?, period_end = ? "
+                  "SET reflection = ?, summary = ?, review_date = ? "
                   "WHERE type = ? and period_start = ? and period_end = ?");
     query.addBindValue(reflection);
     query.addBindValue(summary);
@@ -502,11 +502,9 @@ void Database::updateReview(const QString& reflection, const QString& summary, c
     query.addBindValue(type);
     query.addBindValue(startPeriodDate);
     query.addBindValue(endPeriodDate);
-    query.addBindValue(type);
-    query.addBindValue(startPeriodDate);
-    query.addBindValue(endPeriodDate);
     if (!query.exec())
     {
+        qDebug() << "更新总结失败:" << query.lastError().text();
         return;
     }
 
@@ -523,6 +521,7 @@ void Database::updateReview(const QString& reflection, const QString& summary, c
 
         if (!query.exec())
         {
+            qDebug() << "插入总结失败:" << query.lastError().text();
         }
     }
 }

@@ -872,3 +872,10 @@ void MainWindow::onChartHovered(const QPointF &point, bool state)
     }
 }
 
+
+void MainWindow::on_comboBox_type_currentTextChanged(const QString &arg1)
+{
+    QDate date = ui->calendarWidget->selectedDate();
+    on_calendarWidget_clicked(date);
+}
+
