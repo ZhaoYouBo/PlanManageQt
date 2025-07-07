@@ -49,7 +49,7 @@ MainWindow::MainWindow(QWidget *parent)
         changeTheme(lastTheme);
 
         QList<QAction*> actions = themeGroup->actions();
-        for (QAction* action : actions) {
+        for (QAction* action : std::as_const(actions)) {
             if (action->text() == lastTheme) {
                 action->setChecked(true);
                 found = true;
@@ -203,7 +203,7 @@ void MainWindow::createThemeMenu()
     nameFilters << "*.qss";
     QFileInfoList qssFiles = qssDir.entryInfoList(nameFilters, QDir::Files);
 
-    for (const QFileInfo &fileInfo : qssFiles) {
+    for (const QFileInfo &fileInfo : std::as_const(qssFiles)) {
         QString theme = fileInfo.baseName();
         QAction *action = new QAction(theme, this);
         action->setCheckable(true);
@@ -614,7 +614,7 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
     planDataList = m_dbManager.getPlanByDate(date);
     bool needAdd = true;
 
-    for (const PlanData &plan : planDataList)
+    for (const PlanData &plan : std::as_const(planDataList))
     {
         if (plan.type == "习惯") needAdd = false;
         QList<QStandardItem*> items;
@@ -658,8 +658,56 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
     ui->dateEdit_period_end->setDate(endPeriodDate);
     ReviewData reviewData;
     reviewData = m_dbManager.getReviewByDate(currentText, startPeriodDate, endPeriodDate);
-    ui->textEdit_reflection->setText(reviewData.reflection);
-    ui->textEdit_summary->setText(reviewData.summary);
+    if (!reviewData.reflection.isEmpty()) {
+        ui->textEdit_reflection->setText(reviewData.reflection);
+    }
+    else {
+        ReviewData data;
+        if (currentText == "月总结") {
+            QDate weekStart = startPeriodDate.addDays(-startPeriodDate.dayOfWeek() + 1);
+            if (weekStart < startPeriodDate && startPeriodDate.dayOfWeek() <= 4) {
+                startPeriodDate = weekStart;
+            }
+
+            QDate weekEnd = endPeriodDate.addDays(7 - endPeriodDate.dayOfWeek());
+            if (weekEnd > endPeriodDate && endPeriodDate.dayOfWeek() > 4) {
+                endPeriodDate = weekEnd;
+            }
+        }
+        QList<ReviewData> listData = m_dbManager.getReviewByType(currentText, startPeriodDate, endPeriodDate);
+        for (const ReviewData &item : std::as_const(listData)) {
+            data.reflection += item.reflection + "\n";
+        }
+        if (!data.reflection.isEmpty()) {
+            ui->textEdit_reflection->setText(data.reflection.trimmed());
+        }
+    }
+    if (!reviewData.summary.isEmpty()) {
+        ui->textEdit_summary->setText(reviewData.summary);
+    }
+    else {
+        ReviewData data;
+        if (currentText == "月总结") {
+            QDate weekStart = startPeriodDate.addDays(-startPeriodDate.dayOfWeek() + 1);
+            if (weekStart < startPeriodDate && startPeriodDate.dayOfWeek() <= 4) {
+                startPeriodDate = weekStart;
+            }
+
+            QDate weekEnd = endPeriodDate.addDays(7 - endPeriodDate.dayOfWeek());
+            if (weekEnd > endPeriodDate && endPeriodDate.dayOfWeek() > 4) {
+                endPeriodDate = weekEnd;
+            }
+        }
+        QList<ReviewData> listData = m_dbManager.getReviewByType(currentText, startPeriodDate, endPeriodDate);
+        for (const ReviewData &item : std::as_const(listData)) {
+            data.summary += item.summary + "\n";
+        }
+        if (!data.summary.isEmpty()) {
+            ui->textEdit_summary->setText(data.summary.trimmed());
+        }
+    }
+
+
 
     if (!needAdd)
     {
@@ -669,7 +717,7 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
     QList<HabitData> habitDataList;
     habitDataList = m_dbManager.getHabitByStatus(1);
 
-    for (const HabitData &habit : habitDataList)
+    for (const HabitData &habit : std::as_const(habitDataList))
     {
         if (habit.createdDate > date)
             continue;

@@ -221,6 +221,69 @@ ReviewData Database::getReviewByDate(const QString& type, const QDate& startDate
     return reviewData;
 }
 
+QList<ReviewData> Database::getReviewByType(const QString &type, const QDate &startDate, const QDate &endDate)
+{
+    QList<ReviewData> reviewData;
+    QString searchType;
+    QSqlQuery query;
+
+    if(type == "日总结") {
+        return reviewData;
+    }
+    else if (type == "周总结") {
+        searchType = "日总结";
+        query.prepare("SELECT reflection, summary "
+                      "FROM daily_review "
+                      "WHERE type = ? and period_start >= ? and period_end <= ?;");
+        query.addBindValue(searchType);
+        query.addBindValue(startDate);
+        query.addBindValue(endDate);
+    }
+    else if (type == "月总结") {
+        searchType = "周总结";
+        query.prepare("SELECT reflection, summary "
+                      "FROM daily_review "
+                      "WHERE type = ? and period_start >= ? and period_end <= ?;");
+        query.addBindValue(searchType);
+        query.addBindValue(startDate);
+        query.addBindValue(endDate);
+    }
+    else if (type == "年中总结") {
+        searchType = "月总结";
+        query.prepare("SELECT reflection, summary "
+                      "FROM daily_review "
+                      "WHERE type = ? and period_start >= ? and period_end <= ?;");
+        query.addBindValue(searchType);
+        query.addBindValue(startDate);
+        query.addBindValue(endDate);
+    }
+    else if (type == "年终总结") {
+        searchType = "年中总结";
+        query.prepare("SELECT reflection, summary "
+                      "FROM daily_review "
+                      "WHERE (type = ? and period_start >= ? and period_end <= ?) "
+                      "or (type = '月总结' and period_start >= ? and period_end <= ?);");
+        query.addBindValue(searchType);
+        query.addBindValue(startDate);
+        query.addBindValue(endDate);
+        query.addBindValue(QDate(endDate.year(), 7, 1));
+        query.addBindValue(QDate(endDate.year(), 12, 31));
+    }
+
+    if (!query.exec()) {
+        return reviewData;
+    }
+
+    while (query.next()) {
+        ReviewData data;
+        data.reflection = query.value(0).toString();
+        data.summary = query.value(1).toString();
+        reviewData.append(data);
+    }
+
+    return reviewData;
+}
+
 void Database::addTask(TaskData data)
 {
     QSqlQuery query;

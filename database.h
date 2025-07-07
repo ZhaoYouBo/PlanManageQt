@@ -43,6 +43,7 @@ public:
     QList<PlanData> getPlanByDate(const QDate& date);
     QMap<QDate,double> getPlanNumberByDate(const QDate& startDate, const QDate& endDate);
     ReviewData getReviewByDate(const QString& type, const QDate& startDate, const QDate& endDate);
+    QList<ReviewData> getReviewByType(const QString& type, const QDate& startDate, const QDate& endDate);
     void addTask(TaskData data);
     void addHabit(HabitData data);
     void updateTaskName(int id, const QString& name);
