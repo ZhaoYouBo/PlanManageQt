@@ -59,6 +59,8 @@ public:
     void updateTaskPlan(int index, QString name, int status, int taskId, QDate date);
     void updateReview(const QString& reflection, const QString& summary, const QDate& date, const QString& type);
     void updateHabitStatusByTimes(const HabitData &habit);
+    int getHabitTimes(const HabitData &habit);
+    int getHabitMaxTimes(const HabitData &habit);
 
 private:
     QSqlDatabase m_db;

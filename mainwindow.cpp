@@ -76,7 +76,7 @@ void MainWindow::init()
     m_modelPlan = new PlanModel(this);
 
     m_modelTask->setHorizontalHeaderLabels({"ID", "任务名称", "创建日期", "截止日期", "完成日期", "完成状态"});
-    m_modelHabit->setHorizontalHeaderLabels({"ID", "习惯名称", "创建日期", "习惯频率", "完成状态"});
+    m_modelHabit->setHorizontalHeaderLabels({"ID", "习惯名称", "创建日期", "习惯频率", "总次数", "连续次数", "完成状态"});
     m_modelPlan->setHorizontalHeaderLabels({"类型", "计划名称", "完成状态"});
 
     ui->tableView_task->setModel(m_modelTask);
@@ -96,7 +96,7 @@ void MainWindow::init()
     ui->tableView_task->setItemDelegateForColumn(5, new TaskStatusDelegate(ui->tableView_task));
     ui->tableView_habit->setItemDelegateForColumn(2, new DateDelegate(ui->tableView_habit));
     ui->tableView_habit->setItemDelegateForColumn(3, new HabitFrequencyDelegate(ui->tableView_habit));
-    ui->tableView_habit->setItemDelegateForColumn(4, new HabitStatusDelegate(ui->tableView_habit));
+    ui->tableView_habit->setItemDelegateForColumn(6, new HabitStatusDelegate(ui->tableView_habit));
     PlanNameDelegate *planNameDelegate = new PlanNameDelegate(&m_dbManager, ui->tableView_plan, this);
     ui->tableView_plan->setItemDelegateForColumn(1, planNameDelegate);
     ui->tableView_plan->setItemDelegateForColumn(2, new PlanStatusDelegate(ui->tableView_plan));
@@ -290,6 +290,8 @@ void MainWindow::saveData()
 
     m_dbManager.updateReview(reflection, summary, selectedDate, currentText);
     on_calendarWidget_clicked(ui->calendarWidget->selectedDate());
+
+    on_comboBox_habit_currentIndexChanged(1);
 }
 
 void MainWindow::adjustTableWidth(QTableView *tableView)
@@ -528,10 +530,14 @@ void MainWindow::on_comboBox_habit_currentIndexChanged(int index)
 
     for (const HabitData &habitData : std::as_const(habitDataList)) {
         QList<QStandardItem*> items;
+        int maxTimes = m_dbManager.getHabitMaxTimes(habitData);
+        int allTimes = m_dbManager.getHabitTimes(habitData);
         items.append(new QStandardItem(QString::number(habitData.id)));
         items.append(new QStandardItem(habitData.name));
         items.append(new QStandardItem(habitData.createdDate.toString("yyyy年MM月dd日")));
         items.append(new QStandardItem(habitData.target_frequency));
+        items.append(new QStandardItem(QString::number(allTimes)));
+        items.append(new QStandardItem(QString::number(maxTimes)));
         items.append(new QStandardItem(Utils::habitStatusToString(habitData.status)));
 
         for (int i = 0; i < items.size(); ++i) {
@@ -594,7 +600,6 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
         series->setPointsVisible(true);
         series->setPointLabelsVisible(false);
         
-        // 连接悬停信号
         connect(series, &QLineSeries::hovered, this, &MainWindow::onChartHovered);
         
         chart->addSeries(series);

@@ -591,9 +591,43 @@ void Database::updateReview(const QString& reflection, const QString& summary, c
 
 void Database::updateHabitStatusByTimes(const HabitData &habit)
 {
-    QSqlQuery planQuery;
     QSqlQuery habitQuery;
     bool shouldComplete = false;
+    int maxTimes;
+    maxTimes = getHabitMaxTimes(habit);
+    if (maxTimes >= 30) {
+        shouldComplete = true;
+    }
+    if (shouldComplete)
+    {
+        habitQuery.prepare("UPDATE habits "
+                           "SET status = 1 "
+                           "WHERE name = ? and status = 0");
+        habitQuery.addBindValue(habit.name);
+        habitQuery.exec();
+    }
+}
+
+int Database::getHabitTimes(const HabitData &habit)
+{
+    QSqlQuery query;
+    int allStreak = 0;
+    query.prepare("SELECT COUNT(*) "
+                  "FROM daily_plan "
+                  "WHERE plan_name = ? and status = 1 ");
+    query.addBindValue(habit.name);
+    if (!query.exec() || !query.next()) {
+        return allStreak;
+    }
+
+    allStreak = query.value(0).toInt();
+    return allStreak;
+}
+
+int Database::getHabitMaxTimes(const HabitData &habit)
+{
+    QSqlQuery planQuery;
+    int maxStreak = 0;
     if (habit.target_frequency == "每日一次")
     {
         planQuery.prepare("SELECT plan_date "
@@ -603,7 +637,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
         planQuery.addBindValue(habit.name);
         if (planQuery.exec()) {
             QDate lastDate;
-            int maxStreak = 0;
             int currentStreak = 0;
             while (planQuery.next()) {
                 QDate date = planQuery.value(0).toDate();
@@ -617,10 +650,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
                 }
                 lastDate = date;
             }
-            qDebug() << "习惯:" << habit.name << "[每日一次] 最大连续打卡天数:" << maxStreak;
-            if (maxStreak >= 30) {
-                shouldComplete = true;
-            }
         }
     }
     else if (habit.target_frequency.startsWith("每二日一次"))
@@ -632,7 +661,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
         planQuery.addBindValue(habit.name);
         if (planQuery.exec()) {
             QDate lastDate;
-            int maxStreak = 0;
             int currentStreak = 0;
             while (planQuery.next()) {
                 QDate date = planQuery.value(0).toDate();
@@ -646,10 +674,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
                 }
                 lastDate = date;
             }
-            qDebug() << "习惯:" << habit.name << "[每二日一次] 最大连续打卡次数:" << maxStreak;
-            if (maxStreak >= 30) {
-                shouldComplete = true;
-            }
         }
     }
     else if (habit.target_frequency.startsWith("每三日一次"))
@@ -661,7 +685,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
         planQuery.addBindValue(habit.name);
         if (planQuery.exec()) {
             QDate lastDate;
-            int maxStreak = 0;
             int currentStreak = 0;
             while (planQuery.next()) {
                 QDate date = planQuery.value(0).toDate();
@@ -674,10 +697,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
                     maxStreak = currentStreak;
                 }
                 lastDate = date;
-            }
-            qDebug() << "习惯:" << habit.name << "[每三日一次] 最大连续打卡次数:" << maxStreak;
-            if (maxStreak >= 30) {
-                shouldComplete = true;
             }
         }
 
@@ -701,7 +720,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
         planQuery.addBindValue(habit.name);
         if (planQuery.exec()) {
             QDate lastDate;
-            int maxStreak = 0;
             int currentStreak = 0;
             while (planQuery.next()) {
                 QDate date = planQuery.value(0).toDate();
@@ -716,10 +734,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
                 }
                 lastDate = date;
             }
-            qDebug() << "习惯:" << habit.name << "[每周" << weekDayStr << "] 最大连续打卡周数:" << maxStreak;
-            if (maxStreak >= 30) {
-                shouldComplete = true;
-            }
         }
     }
     else if (habit.target_frequency.startsWith("每周工作日"))
@@ -732,7 +746,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
         if (planQuery.exec()) {
             QDate lastDate;
             int lastDayOfWeek = 0;
-            int maxStreak = 0;
             int currentStreak = 0;
             while (planQuery.next()) {
                 QDate date = planQuery.value(0).toDate();
@@ -755,10 +768,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
                     lastDate = date;
                 }
             }
-            qDebug() << "习惯:" << habit.name << "[每周工作日] 最大连续打卡天数:" << maxStreak;
-            if (maxStreak >= 30) {
-                shouldComplete = true;
-            }
         }
     }
     else if (habit.target_frequency.startsWith("每周休息日"))
@@ -770,7 +779,6 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
         planQuery.addBindValue(habit.name);
         if (planQuery.exec()) {
             QDate lastDate;
-            int maxStreak = 0;
             int currentStreak = 0;
             while (planQuery.next()) {
                 QDate date = planQuery.value(0).toDate();
@@ -788,19 +796,8 @@ void Database::updateHabitStatusByTimes(const HabitData &habit)
                     lastDate = date;
                 }
             }
-            qDebug() << "习惯:" << habit.name << "[每周休息日] 最大连续打卡天数:" << maxStreak;
-            if (maxStreak >= 30) {
-                shouldComplete = true;
-            }
         }
     }
 
-    if (shouldComplete)
-    {
-        habitQuery.prepare("UPDATE habits "
-                           "SET status = 1 "
-                           "WHERE name = ? and status = 0");
-        habitQuery.addBindValue(habit.name);
-        habitQuery.exec();
-    }
+    return maxStreak;
 }
