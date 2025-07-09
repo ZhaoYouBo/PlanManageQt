@@ -2,13 +2,14 @@
 #include "ui_mainwindow.h"
 #include "addtaskdialog.h"
 #include "addhabitdialog.h"
-#include "datedelegate.h"
-#include "taskstatusdelegate.h"
-#include "habitstatusdelegate.h"
-#include "planstatusdelegate.h"
-#include "plannamedelegate.h"
-#include "habitfrequencydelegate.h"
 #include "utils.h"
+#include "delegates/datedelegate.h"
+#include "delegates/habitfrequencydelegate.h"
+#include "delegates/taskstatusdelegate.h"
+#include "delegates/habitstatusdelegate.h"
+#include "delegates/planstatusdelegate.h"
+#include "delegates/plannamedelegate.h"
+
 #include <QDate>
 #include <QFile>
 #include <QLineSeries>
@@ -438,25 +439,6 @@ void MainWindow::onTableViewHabitDataChanged(const QModelIndex &topLeft, const Q
     on_comboBox_habit_currentIndexChanged(ui->comboBox_task->currentIndex());
 }
 
-
-TaskModel::TaskModel(QObject *parent)
-    : QStandardItemModel(parent)
-{
-
-}
-
-Qt::ItemFlags TaskModel::flags(const QModelIndex &index) const
-{
-    switch (index.column()) {
-    case 0:
-    case 2:
-    case 4:
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-    default:
-        return QStandardItemModel::flags(index);
-    }
-}
-
 void MainWindow::on_comboBox_task_currentIndexChanged(int index)
 {
     m_modelTask->removeRows(0, m_modelTask->rowCount());
@@ -501,23 +483,6 @@ void MainWindow::on_pushButton_add_habit_clicked()
         m_dbManager.addHabit(habitData);
 
         on_comboBox_habit_currentIndexChanged(ui->comboBox_habit->currentIndex());
-    }
-}
-
-
-HabitModel::HabitModel(QObject *parent)
-    : QStandardItemModel(parent)
-{
-
-}
-
-Qt::ItemFlags HabitModel::flags(const QModelIndex &index) const
-{
-    switch (index.column()) {
-    case 0:
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-    default:
-        return QStandardItemModel::flags(index);
     }
 }
 
@@ -804,23 +769,6 @@ void MainWindow::on_calendarWidget_clicked(const QDate &date)
         }
 
         m_dbManager.updateHabitStatusByTimes(habit);
-    }
-}
-
-
-PlanModel::PlanModel(QObject *parent)
-    : QStandardItemModel(parent)
-{
-
-}
-
-Qt::ItemFlags PlanModel::flags(const QModelIndex &index) const
-{
-    switch (index.column()) {
-    case 0:
-        return Qt::ItemIsSelectable | Qt::ItemIsEnabled;
-    default:
-        return QStandardItemModel::flags(index);
     }
 }
 

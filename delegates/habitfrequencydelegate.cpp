@@ -1,12 +1,11 @@
 #include "habitfrequencydelegate.h"
-#include "utils.h"
+#include "../utils.h"
 #include <QComboBox>
 
 HabitFrequencyDelegate::HabitFrequencyDelegate(QObject *parent)
-    : QStyledItemDelegate(parent)
-{
+    : QStyledItemDelegate{parent}
+{}
 
-}
 
 QWidget *HabitFrequencyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {

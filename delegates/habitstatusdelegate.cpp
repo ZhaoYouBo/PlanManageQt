@@ -1,22 +1,21 @@
-#include "taskstatusdelegate.h"
+#include "habitstatusdelegate.h"
+#include "..\utils.h"
+
 #include <QComboBox>
 #include <QPainter>
-#include "utils.h"
 
-TaskStatusDelegate::TaskStatusDelegate(QObject *parent)
-    : QStyledItemDelegate(parent)
-{
+HabitStatusDelegate::HabitStatusDelegate(QObject *parent)
+    : QStyledItemDelegate{parent}
+{}
 
-}
-
-QWidget *TaskStatusDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+QWidget *HabitStatusDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     QComboBox *editor = new QComboBox(parent);
-    editor->addItems(Utils::taskStatusList());
+    editor->addItems(Utils::habitStatusList());
     return editor;
 }
 
-void TaskStatusDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+void HabitStatusDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
     QString value = index.model()->data(index, Qt::EditRole).toString();
     QComboBox *comboBox = static_cast<QComboBox*>(editor);
@@ -26,18 +25,18 @@ void TaskStatusDelegate::setEditorData(QWidget *editor, const QModelIndex &index
     }
 }
 
-void TaskStatusDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+void HabitStatusDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     QComboBox *comboBox = static_cast<QComboBox*>(editor);
     model->setData(index, comboBox->currentText(), Qt::EditRole);
 }
 
-void TaskStatusDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void HabitStatusDelegate::updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     editor->setGeometry(option.rect);
 }
 
-void TaskStatusDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void HabitStatusDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     const QMap<QString, QColor>& colorMap = Utils::statusColorMap();
     QString status = index.data(Qt::DisplayRole).toString();

@@ -1,16 +1,28 @@
-#ifndef HABITSTATUSDELEGATE_H
-#define HABITSTATUSDELEGATE_H
-#include <QStyledItemDelegate>
+#ifndef PLANNAMEDELEGATE_H
+#define PLANNAMEDELEGATE_H
 
-class HabitStatusDelegate : public QStyledItemDelegate
+#include "../database.h"
+
+#include <QStyledItemDelegate>
+#include <QTableView>
+
+class PlanNameDelegate : public QStyledItemDelegate
 {
+    Q_OBJECT
 public:
-    HabitStatusDelegate(QObject *parent = nullptr);
+    explicit PlanNameDelegate(Database *dbManager, QTableView *tableView, QObject *parent = nullptr);
+
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
     void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+
+    void refreshTaskNames();
+
+private:
+    Database* m_dbManager;
+    QTableView *m_tableView;
+    mutable QStringList m_taskNames;
 };
 
-#endif // HABITSTATUSDELEGATE_H
+#endif // PLANNAMEDELEGATE_H

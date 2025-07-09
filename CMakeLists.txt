@@ -15,16 +15,26 @@ qt_add_executable(PlanManageQt
     mainwindow.ui
     database.h database.cpp
     addtaskdialog.h addtaskdialog.cpp addtaskdialog.ui
-    datedelegate.h datedelegate.cpp
-    taskstatusdelegate.h taskstatusdelegate.cpp
+
+
     utils.h utils.cpp
     addhabitdialog.h addhabitdialog.cpp addhabitdialog.ui
-    habitstatusdelegate.h habitstatusdelegate.cpp
-    habitfrequencydelegate.h habitfrequencydelegate.cpp
-    planstatusdelegate.h planstatusdelegate.cpp
-    plannamedelegate.h plannamedelegate.cpp
+
+
+
+
     resources.qrc
     photosurface.rc
+    models/taskmodel.h models/taskmodel.cpp
+    models/habitmodel.h models/habitmodel.cpp
+    models/planmodel.h models/planmodel.cpp
+    delegates/habitfrequencydelegate.h delegates/habitfrequencydelegate.cpp
+    delegates/datedelegate.h delegates/datedelegate.cpp
+    delegates/habitstatusdelegate.h delegates/habitstatusdelegate.cpp
+    delegates/plannamedelegate.h delegates/plannamedelegate.cpp
+    delegates/planstatusdelegate.h delegates/planstatusdelegate.cpp
+    delegates/taskstatusdelegate.h delegates/taskstatusdelegate.cpp
+
 )
 
 target_link_libraries(PlanManageQt

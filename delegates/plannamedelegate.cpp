@@ -1,4 +1,5 @@
 #include "plannamedelegate.h"
+
 #include <QComboBox>
 
 PlanNameDelegate::PlanNameDelegate(Database* dbManager, QTableView *tableView, QObject *parent)

@@ -1,15 +1,18 @@
-#ifndef HABITFREQUENCYDELEGATE_H
-#define HABITFREQUENCYDELEGATE_H
+#ifndef PLANSTATUSDELEGATE_H
+#define PLANSTATUSDELEGATE_H
+
 #include <QStyledItemDelegate>
 
-class HabitFrequencyDelegate : public QStyledItemDelegate
+class PlanStatusDelegate : public QStyledItemDelegate
 {
 public:
-    HabitFrequencyDelegate(QObject *parent = nullptr);
+    explicit PlanStatusDelegate(QObject *parent = nullptr);
+
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
     void updateEditorGeometry(QWidget *editor, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
-#endif // HABITFREQUENCYDELEGATE_H
+#endif // PLANSTATUSDELEGATE_H

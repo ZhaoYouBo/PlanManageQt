@@ -1,39 +1,22 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "database.h"
+#include "models/habitmodel.h"
+#include "models/taskmodel.h"
+#include "models/planmodel.h"
+
 #include <QMainWindow>
 #include <QStandardItemModel>
 #include <QTableView>
 #include <QChartView>
 #include <QToolTip>
-#include "database.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
 class MainWindow;
 }
 QT_END_NAMESPACE
-
-class TaskModel : public QStandardItemModel
-{
-public:
-    explicit TaskModel(QObject *parent = nullptr);
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
-};
-
-class HabitModel : public QStandardItemModel
-{
-public:
-    explicit HabitModel(QObject *parent = nullptr);
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
-};
-
-class PlanModel : public QStandardItemModel
-{
-public:
-    explicit PlanModel(QObject *parent = nullptr);
-    Qt::ItemFlags flags(const QModelIndex &index) const override;
-};
 
 class MainWindow : public QMainWindow
 {

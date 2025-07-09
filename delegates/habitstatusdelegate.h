@@ -1,12 +1,13 @@
-#ifndef PLANSTATUSDELEGATE_H
-#define PLANSTATUSDELEGATE_H
+#ifndef HABITSTATUSDELEGATE_H
+#define HABITSTATUSDELEGATE_H
 
 #include <QStyledItemDelegate>
 
-class PlanStatusDelegate : public QStyledItemDelegate
+class HabitStatusDelegate : public QStyledItemDelegate
 {
 public:
-    explicit PlanStatusDelegate(QObject *parent = nullptr);
+    explicit HabitStatusDelegate(QObject *parent = nullptr);
+
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
@@ -14,4 +15,4 @@ public:
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 };
 
-#endif // PLANSTATUSDELEGATE_H
+#endif // HABITSTATUSDELEGATE_H
